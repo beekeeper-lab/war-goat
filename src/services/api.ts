@@ -1,4 +1,12 @@
-import type { InterestItem, EnrichedCreateInput, UpdateInterestInput } from '../types';
+import type {
+  InterestItem,
+  EnrichedCreateInput,
+  UpdateInterestInput,
+  ObsidianStatus,
+  ObsidianExportOptions,
+  ObsidianExportResult,
+  ObsidianSyncResult,
+} from '../types';
 import { categorizeItem } from './categorize';
 
 const API_BASE = '/api';
@@ -107,4 +115,108 @@ export async function saveTranscript(id: string, transcript: string): Promise<vo
   });
 
   if (!response.ok) throw new Error('Failed to save transcript');
+}
+
+// ============================================================================
+// Obsidian API Functions
+// ============================================================================
+
+/**
+ * Get Obsidian connection status
+ */
+export async function getObsidianStatus(): Promise<ObsidianStatus> {
+  const response = await fetch(`${API_BASE}/obsidian/status`);
+  if (!response.ok) {
+    return { connected: false, error: 'Failed to check status' };
+  }
+  return response.json();
+}
+
+/**
+ * Export a single interest to Obsidian
+ */
+export async function exportToObsidian(
+  id: string,
+  options: ObsidianExportOptions = {}
+): Promise<ObsidianExportResult> {
+  const response = await fetch(`${API_BASE}/interests/${id}/export-obsidian`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(options),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Export failed' }));
+    return { success: false, error: error.error || 'Export failed' };
+  }
+
+  return response.json();
+}
+
+/**
+ * Sync all interests to Obsidian with progress callback
+ * Uses Server-Sent Events for progress updates
+ */
+export async function syncToObsidian(
+  options: ObsidianExportOptions = {},
+  onProgress?: (current: number, total: number, itemTitle: string) => void
+): Promise<ObsidianSyncResult> {
+  return new Promise((resolve, reject) => {
+    // Use fetch with streaming for SSE
+    fetch(`${API_BASE}/sync-obsidian`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(options),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          reject(new Error('Sync failed'));
+          return;
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) {
+          reject(new Error('No response body'));
+          return;
+        }
+
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+
+          // Process complete SSE messages
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+
+                if (data.type === 'progress' && onProgress) {
+                  onProgress(data.current, data.total, data.item);
+                } else if (data.type === 'complete') {
+                  resolve(data.result);
+                  return;
+                } else if (data.type === 'error') {
+                  reject(new Error(data.error));
+                  return;
+                }
+              } catch (e) {
+                // Ignore parse errors for incomplete JSON
+              }
+            }
+          }
+        }
+
+        // If we get here without a complete message, something went wrong
+        reject(new Error('Connection closed unexpectedly'));
+      })
+      .catch(reject);
+  });
 }

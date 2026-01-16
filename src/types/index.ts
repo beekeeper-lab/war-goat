@@ -43,6 +43,10 @@ export interface InterestItem {
   // GitHub specific
   stars?: number;
   language?: string;
+
+  // Obsidian integration
+  obsidianPath?: string;
+  obsidianSyncedAt?: string;
 }
 
 export interface CreateInterestInput {
@@ -69,6 +73,9 @@ export interface UpdateInterestInput {
   status?: ItemStatus;
   tags?: string[];
   notes?: string;
+  // Obsidian sync tracking
+  obsidianPath?: string;
+  obsidianSyncedAt?: string;
 }
 
 // URL detection patterns
@@ -114,4 +121,59 @@ export function detectSourceType(url: string): SourceType {
     return 'article';
   }
   return 'other';
+}
+
+// ============================================================================
+// Obsidian Integration Types
+// ============================================================================
+
+export interface ObsidianSettings {
+  enabled: boolean;
+  defaultFolder: string;
+  includeTranscript: boolean;
+  generateStudyNotes: boolean;
+  autoSyncOnCreate: boolean;
+}
+
+export const DEFAULT_OBSIDIAN_SETTINGS: ObsidianSettings = {
+  enabled: true,
+  defaultFolder: 'War Goat',
+  includeTranscript: true,
+  generateStudyNotes: false,
+  autoSyncOnCreate: false,
+};
+
+export interface ObsidianExportOptions {
+  folder?: string;
+  generateStudyNotes?: boolean;
+  includeTranscript?: boolean;
+  forceOverwrite?: boolean;
+}
+
+export interface ObsidianExportResult {
+  success: boolean;
+  notePath?: string;
+  existed?: boolean;
+  error?: string;
+}
+
+export interface ObsidianSyncResult {
+  created: number;
+  skipped: number;
+  failed: number;
+  errors: Array<{ id: string; error: string }>;
+}
+
+export interface ObsidianStatus {
+  connected: boolean;
+  vaultName?: string;
+  error?: string;
+}
+
+export interface StudyNotes {
+  summary: string;
+  keyConcepts: Array<{ name: string; description: string }>;
+  quotes: Array<{ text: string; timestamp?: string }>;
+  relatedTopics: string[];
+  actionItems: string[];
 }

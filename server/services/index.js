@@ -29,3 +29,15 @@ export {
   enrichYouTubeUrl,
   getVideoMetrics,
 } from './youtube.js';
+
+// Obsidian service
+export {
+  sanitizeFilename,
+  buildNoteContent,
+  checkConnection as checkObsidianConnection,
+  findExistingNote,
+  exportInterest,
+  updateNoteFrontmatter,
+  syncAll as syncAllToObsidian,
+  generateStudyNotes,
+} from './obsidian.js';

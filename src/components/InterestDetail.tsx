@@ -13,6 +13,7 @@ import {
   ChevronDown,
   ChevronUp,
   Loader2,
+  FileDown,
 } from 'lucide-react';
 import type { InterestItem, ItemStatus, UpdateInterestInput } from '../types';
 import { fetchTranscript } from '../services/api';
@@ -22,6 +23,8 @@ interface InterestDetailProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (id: string, input: UpdateInterestInput) => Promise<InterestItem>;
+  onExportToObsidian?: () => void;
+  obsidianConnected?: boolean;
 }
 
 const TYPE_ICONS = {
@@ -34,7 +37,14 @@ const TYPE_ICONS = {
   other: Link,
 };
 
-export function InterestDetail({ item, isOpen, onClose, onUpdate }: InterestDetailProps) {
+export function InterestDetail({
+  item,
+  isOpen,
+  onClose,
+  onUpdate,
+  onExportToObsidian,
+  obsidianConnected = false,
+}: InterestDetailProps) {
   const [status, setStatus] = useState<ItemStatus>(item.status);
   const [notes, setNotes] = useState(item.notes || '');
   const [tags, setTags] = useState(item.tags.join(', '));
@@ -208,6 +218,17 @@ export function InterestDetail({ item, isOpen, onClose, onUpdate }: InterestDeta
             >
               Cancel
             </button>
+            {onExportToObsidian && (
+              <button
+                onClick={onExportToObsidian}
+                disabled={!obsidianConnected}
+                className="px-4 py-2 border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 disabled:opacity-50 flex items-center gap-2"
+                title={obsidianConnected ? 'Export to Obsidian' : 'Obsidian not connected'}
+              >
+                <FileDown className="w-4 h-4" />
+                Export
+              </button>
+            )}
             <button
               onClick={handleSave}
               disabled={saving}

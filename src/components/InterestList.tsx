@@ -9,6 +9,8 @@ interface InterestListProps {
   onStatusChange: (id: string, status: ItemStatus) => void;
   onDelete: (id: string) => void;
   onItemClick: (item: InterestItem) => void;
+  onExportToObsidian?: (item: InterestItem) => void;
+  obsidianConnected?: boolean;
 }
 
 export function InterestList({
@@ -18,6 +20,8 @@ export function InterestList({
   onStatusChange,
   onDelete,
   onItemClick,
+  onExportToObsidian,
+  obsidianConnected = false,
 }: InterestListProps) {
   if (loading) {
     return (
@@ -56,6 +60,8 @@ export function InterestList({
           onStatusChange={onStatusChange}
           onDelete={onDelete}
           onClick={() => onItemClick(item)}
+          onExportToObsidian={onExportToObsidian ? () => onExportToObsidian(item) : undefined}
+          obsidianConnected={obsidianConnected}
         />
       ))}
     </div>

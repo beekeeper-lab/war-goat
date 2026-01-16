@@ -13,12 +13,15 @@ import {
   Circle,
 } from 'lucide-react';
 import type { InterestItem, ItemStatus } from '../types';
+import { ExportToObsidianButton } from './ExportToObsidianButton';
 
 interface InterestCardProps {
   item: InterestItem;
   onStatusChange: (id: string, status: ItemStatus) => void;
   onDelete: (id: string) => void;
   onClick: () => void;
+  onExportToObsidian?: () => void;
+  obsidianConnected?: boolean;
 }
 
 const TYPE_ICONS = {
@@ -47,7 +50,14 @@ const STATUS_CONFIG = {
   completed: { icon: CheckCircle, label: 'Completed', color: 'text-green-500' },
 };
 
-export function InterestCard({ item, onStatusChange, onDelete, onClick }: InterestCardProps) {
+export function InterestCard({
+  item,
+  onStatusChange,
+  onDelete,
+  onClick,
+  onExportToObsidian,
+  obsidianConnected = false,
+}: InterestCardProps) {
   const TypeIcon = TYPE_ICONS[item.type];
   const typeColor = TYPE_COLORS[item.type];
   const statusConfig = STATUS_CONFIG[item.status];
@@ -101,6 +111,14 @@ export function InterestCard({ item, onStatusChange, onDelete, onClick }: Intere
             </div>
 
             <div className="flex items-center gap-1 flex-shrink-0">
+              {onExportToObsidian && (
+                <ExportToObsidianButton
+                  item={item}
+                  onExport={onExportToObsidian}
+                  disabled={!obsidianConnected}
+                  size="sm"
+                />
+              )}
               <button
                 onClick={handleExternalLink}
                 className="p-1.5 text-gray-400 hover:text-gray-600 rounded"

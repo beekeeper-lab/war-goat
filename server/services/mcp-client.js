@@ -266,4 +266,17 @@ mcpRegistry.register('youtube-transcript', {
   args: ['run', '-i', '--rm', 'mcp/youtube-transcript']
 });
 
+// Obsidian MCP - uses the obsidian-mcp Docker container
+// Note: Requires OBSIDIAN_API_KEY and OBSIDIAN_REST_URL env vars
+mcpRegistry.register('obsidian', {
+  command: 'docker',
+  args: [
+    'run', '-i', '--rm',
+    '--network', 'host',
+    '-e', `OBSIDIAN_API_KEY=${process.env.OBSIDIAN_API_KEY || ''}`,
+    '-e', `OBSIDIAN_REST_URL=${process.env.OBSIDIAN_REST_URL || 'http://localhost:27123'}`,
+    'mcp/obsidian'
+  ]
+});
+
 export default MCPClient;

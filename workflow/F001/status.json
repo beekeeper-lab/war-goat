@@ -3,39 +3,49 @@
   "type": "feature",
   "title": "Obsidian Integration",
   "createdAt": "2026-01-16T14:59:52-05:00",
-  "currentStage": "requirements",
+  "currentStage": "complete",
   "stages": {
     "requirements": {
-      "status": "pending",
-      "startedAt": null,
-      "completedAt": null,
-      "agent": null,
+      "status": "completed",
+      "startedAt": "2026-01-16T15:20:00Z",
+      "completedAt": "2026-01-16T15:45:00Z",
+      "agent": "Requirements Agent",
       "output": "1-requirements.md"
     },
     "architecture": {
-      "status": "pending",
-      "startedAt": null,
-      "completedAt": null,
-      "agent": null,
+      "status": "completed",
+      "startedAt": "2026-01-16T15:50:00Z",
+      "completedAt": "2026-01-16T16:30:00Z",
+      "agent": "Architecture Agent",
       "output": "2-architecture.md"
     },
     "implementation": {
-      "status": "pending",
-      "startedAt": null,
-      "completedAt": null,
-      "agent": null,
+      "status": "completed",
+      "startedAt": "2026-01-16T17:00:00Z",
+      "completedAt": "2026-01-16T18:00:00Z",
+      "agent": "Implementor Agent",
       "output": "3-implementation.md"
     },
     "qa": {
-      "status": "pending",
-      "startedAt": null,
-      "completedAt": null,
-      "agent": null,
-      "output": "4-qa-report.md"
+      "status": "completed",
+      "startedAt": "2026-01-16T18:00:00Z",
+      "completedAt": "2026-01-16T18:30:00Z",
+      "agent": "QA Agent",
+      "output": "4-qa-report.md",
+      "verdict": "approved"
     }
   },
   "branch": "feature/F001",
   "worktree": "../war-goat-f001",
-  "bugs": [],
-  "notes": []
+  "bugs": [
+    {
+      "id": "B001",
+      "description": "Missing @anthropic-ai/sdk dependency",
+      "status": "fixed"
+    }
+  ],
+  "notes": [
+    "Full E2E testing requires running Obsidian instance",
+    "Test coverage follow-up recommended"
+  ]
 }

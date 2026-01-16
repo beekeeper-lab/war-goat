@@ -4,8 +4,12 @@ import { FilterBar } from './components/FilterBar';
 import { InterestList } from './components/InterestList';
 import { AddInterestModal } from './components/AddInterestModal';
 import { InterestDetail } from './components/InterestDetail';
+import { ObsidianExportModal } from './components/ObsidianExportModal';
+import { SyncProgress } from './components/SyncProgress';
 import { useInterests } from './hooks/useInterests';
-import type { InterestItem, SourceType, ItemStatus, EnrichedCreateInput } from './types';
+import { useObsidianStatus } from './hooks/useObsidianStatus';
+import { exportToObsidian, syncToObsidian } from './services/api';
+import type { InterestItem, SourceType, ItemStatus, EnrichedCreateInput, ObsidianExportOptions } from './types';
 
 export default function App() {
   const {
@@ -17,12 +21,32 @@ export default function App() {
     deleteInterest,
   } = useInterests();
 
+  const { isConnected: obsidianConnected } = useObsidianStatus();
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InterestItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<SourceType | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<ItemStatus | 'all'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string | 'all'>('all');
+
+  // Obsidian export state
+  const [exportItem, setExportItem] = useState<InterestItem | null>(null);
+  const [syncState, setSyncState] = useState<{
+    active: boolean;
+    current: number;
+    total: number;
+    currentItem: string;
+    status: 'syncing' | 'complete' | 'error';
+    result?: { created: number; skipped: number; failed: number };
+    error?: string;
+  }>({
+    active: false,
+    current: 0,
+    total: 0,
+    currentItem: '',
+    status: 'syncing',
+  });
 
   // Derive available categories from all items
   const availableCategories = useMemo(() => {
@@ -74,9 +98,76 @@ export default function App() {
     await addInterest(input);
   };
 
+  // Obsidian export handler
+  const handleExportToObsidian = async (options: ObsidianExportOptions) => {
+    if (!exportItem) return { success: false, error: 'No item selected' };
+    const result = await exportToObsidian(exportItem.id, options);
+    if (result.success && result.notePath) {
+      // Update the item with the obsidian path
+      await updateInterest(exportItem.id, {
+        obsidianPath: result.notePath,
+        obsidianSyncedAt: new Date().toISOString(),
+      });
+    }
+    return result;
+  };
+
+  // Obsidian sync all handler
+  const handleSyncAll = async () => {
+    setSyncState({
+      active: true,
+      current: 0,
+      total: interests.length,
+      currentItem: '',
+      status: 'syncing',
+    });
+
+    try {
+      const result = await syncToObsidian({}, (current, total, itemTitle) => {
+        setSyncState((prev) => ({
+          ...prev,
+          current,
+          total,
+          currentItem: itemTitle,
+        }));
+      });
+
+      setSyncState((prev) => ({
+        ...prev,
+        status: 'complete',
+        result: {
+          created: result.created,
+          skipped: result.skipped,
+          failed: result.failed,
+        },
+      }));
+    } catch (err) {
+      setSyncState((prev) => ({
+        ...prev,
+        status: 'error',
+        error: err instanceof Error ? err.message : 'Sync failed',
+      }));
+    }
+  };
+
+  const closeSyncProgress = () => {
+    setSyncState({
+      active: false,
+      current: 0,
+      total: 0,
+      currentItem: '',
+      status: 'syncing',
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onAddClick={() => setShowAddModal(true)} />
+      <Header
+        onAddClick={() => setShowAddModal(true)}
+        onSyncClick={handleSyncAll}
+        syncing={syncState.active}
+        obsidianConnected={obsidianConnected}
+      />
 
       <FilterBar
         searchQuery={searchQuery}
@@ -105,6 +196,8 @@ export default function App() {
           onStatusChange={handleStatusChange}
           onDelete={deleteInterest}
           onItemClick={setSelectedItem}
+          onExportToObsidian={setExportItem}
+          obsidianConnected={obsidianConnected}
         />
       </main>
 
@@ -120,8 +213,33 @@ export default function App() {
           isOpen={!!selectedItem}
           onClose={() => setSelectedItem(null)}
           onUpdate={updateInterest}
+          onExportToObsidian={() => {
+            setExportItem(selectedItem);
+            setSelectedItem(null);
+          }}
+          obsidianConnected={obsidianConnected}
         />
       )}
+
+      {exportItem && (
+        <ObsidianExportModal
+          item={exportItem}
+          isOpen={!!exportItem}
+          onClose={() => setExportItem(null)}
+          onExport={handleExportToObsidian}
+        />
+      )}
+
+      <SyncProgress
+        isOpen={syncState.active}
+        current={syncState.current}
+        total={syncState.total}
+        currentItem={syncState.currentItem}
+        status={syncState.status}
+        result={syncState.result}
+        error={syncState.error}
+        onClose={closeSyncProgress}
+      />
     </div>
   );
 }
