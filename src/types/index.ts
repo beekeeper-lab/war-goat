@@ -1,0 +1,117 @@
+export type SourceType =
+  | 'youtube'
+  | 'book'
+  | 'audiobook'
+  | 'article'
+  | 'podcast'
+  | 'github'
+  | 'other';
+
+export type ItemStatus = 'backlog' | 'in-progress' | 'completed';
+
+export interface InterestItem {
+  id: string;
+  url: string;
+  type: SourceType;
+  title: string;
+  description?: string;
+  thumbnail?: string;
+  author?: string;
+  createdAt: string;
+  updatedAt: string;
+  status: ItemStatus;
+  notes?: string;
+  tags: string[];
+  categories?: string[];
+
+  // YouTube specific
+  transcript?: string;
+  transcriptError?: string;
+  hasTranscript?: boolean;
+  duration?: string;
+  channelName?: string;
+
+  // Book/Audiobook specific
+  isbn?: string;
+  pageCount?: number;
+  narrator?: string;
+
+  // Article specific
+  siteName?: string;
+  publishedDate?: string;
+
+  // GitHub specific
+  stars?: number;
+  language?: string;
+}
+
+export interface CreateInterestInput {
+  url: string;
+  title?: string;
+  description?: string;
+  type?: SourceType;
+  status?: ItemStatus;
+  tags?: string[];
+  notes?: string;
+}
+
+export interface EnrichedCreateInput extends CreateInterestInput {
+  transcript?: string;
+  thumbnail?: string;
+  author?: string;
+  channelName?: string;
+  categories?: string[];
+}
+
+export interface UpdateInterestInput {
+  title?: string;
+  description?: string;
+  status?: ItemStatus;
+  tags?: string[];
+  notes?: string;
+}
+
+// URL detection patterns
+export const URL_PATTERNS: Record<SourceType, RegExp[]> = {
+  youtube: [
+    /youtube\.com\/watch/,
+    /youtu\.be\//,
+    /youtube\.com\/shorts/,
+  ],
+  book: [
+    /amazon\.com.*\/dp\//,
+    /amazon\.com.*\/gp\/product/,
+    /goodreads\.com\/book/,
+  ],
+  audiobook: [
+    /audible\.com/,
+    /libro\.fm/,
+  ],
+  article: [], // Fallback for most URLs
+  podcast: [
+    /spotify\.com.*episode/,
+    /podcasts\.apple\.com/,
+    /overcast\.fm/,
+  ],
+  github: [
+    /github\.com\/[\w-]+\/[\w-]+$/,
+    /github\.com\/[\w-]+\/[\w-]+\/?$/,
+  ],
+  other: [],
+};
+
+export function detectSourceType(url: string): SourceType {
+  for (const [type, patterns] of Object.entries(URL_PATTERNS)) {
+    if (type === 'article' || type === 'other') continue;
+    for (const pattern of patterns) {
+      if (pattern.test(url)) {
+        return type as SourceType;
+      }
+    }
+  }
+  // Default to article for http(s) URLs, other for everything else
+  if (/^https?:\/\//.test(url)) {
+    return 'article';
+  }
+  return 'other';
+}

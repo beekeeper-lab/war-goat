@@ -1,0 +1,41 @@
+{
+  "workflowId": "",
+  "type": "feature|bug|chore",
+  "title": "",
+  "createdAt": "",
+  "currentStage": "requirements",
+  "stages": {
+    "requirements": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "agent": null,
+      "output": "1-requirements.md"
+    },
+    "architecture": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "agent": null,
+      "output": "2-architecture.md"
+    },
+    "implementation": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "agent": null,
+      "output": "3-implementation.md"
+    },
+    "qa": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "agent": null,
+      "output": "4-qa-report.md"
+    }
+  },
+  "branch": "",
+  "worktree": "",
+  "bugs": [],
+  "notes": []
+}

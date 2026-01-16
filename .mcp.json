@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "youtube-transcript": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "mcp/youtube-transcript"
+      ]
+    },
+    "youtube-search": {
+      "command": "/home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools/mcp-servers/youtube-content-management-mcp/.venv/bin/python",
+      "args": [
+        "/home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools/mcp-servers/youtube-content-management-mcp/main.py"
+      ],
+      "cwd": "/home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools/mcp-servers/youtube-content-management-mcp"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    }
+  }
+}

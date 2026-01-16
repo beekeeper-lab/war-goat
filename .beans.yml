@@ -1,0 +1,6 @@
+beans:
+    path: .beans
+    prefix: Hackshop_Agentic_Dev_Tools-
+    id_length: 4
+    default_status: todo
+    default_type: task

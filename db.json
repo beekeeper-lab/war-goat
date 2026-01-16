@@ -1,0 +1,453 @@
+{
+  "interests": [
+    {
+      "id": "2",
+      "url": "https://www.amazon.com/dp/0134685997",
+      "type": "book",
+      "title": "Effective Java",
+      "description": "The definitive guide to Java programming language best practices",
+      "thumbnail": "https://images-na.ssl-images-amazon.com/images/I/41zLisPNN2L._SX376_BO1,204,203,200_.jpg",
+      "author": "Joshua Bloch",
+      "pageCount": 416,
+      "isbn": "0134685997",
+      "status": "in-progress",
+      "tags": [
+        "programming",
+        "java",
+        "best-practices"
+      ],
+      "notes": "Currently on chapter 3 - Methods Common to All Objects",
+      "createdAt": "2025-01-10T08:30:00Z",
+      "updatedAt": "2025-01-14T15:20:00Z"
+    },
+    {
+      "id": "3",
+      "url": "https://www.audible.com/pd/Atomic-Habits-Audiobook/B07RFSSYBH",
+      "type": "audiobook",
+      "title": "Atomic Habits",
+      "description": "An Easy & Proven Way to Build Good Habits & Break Bad Ones",
+      "thumbnail": "https://m.media-amazon.com/images/I/51-nXsSRfZL._SL500_.jpg",
+      "author": "James Clear",
+      "narrator": "James Clear",
+      "duration": "5 hrs 35 mins",
+      "status": "completed",
+      "tags": [
+        "self-improvement",
+        "productivity",
+        "habits"
+      ],
+      "notes": "Great book! Key takeaway: 1% better every day compounds to 37x better over a year.",
+      "createdAt": "2025-01-05T12:00:00Z",
+      "updatedAt": "2025-01-12T18:45:00Z"
+    },
+    {
+      "id": "4",
+      "url": "https://github.com/anthropics/claude-code",
+      "type": "github",
+      "title": "anthropics/claude-code",
+      "description": "Claude Code is an agentic coding tool that lives in your terminal",
+      "stars": 25000,
+      "language": "TypeScript",
+      "status": "backlog",
+      "tags": [
+        "ai",
+        "cli",
+        "coding-assistant"
+      ],
+      "notes": "",
+      "createdAt": "2025-01-16T09:00:00Z",
+      "updatedAt": "2025-01-16T09:00:00Z"
+    },
+    {
+      "id": "5",
+      "url": "https://martinfowler.com/articles/microservices.html",
+      "type": "article",
+      "title": "Microservices",
+      "description": "A definition of this new architectural term",
+      "siteName": "martinfowler.com",
+      "author": "Martin Fowler",
+      "publishedDate": "2014-03-25",
+      "status": "completed",
+      "tags": [
+        "architecture",
+        "microservices",
+        "distributed-systems"
+      ],
+      "notes": "Classic article on microservices. Good reference for team discussions.",
+      "createdAt": "2025-01-08T14:30:00Z",
+      "updatedAt": "2025-01-09T10:15:00Z"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=J5B9UGTuNoM",
+      "type": "youtube",
+      "title": "I’m HOOKED on Claude Code Hooks: Advanced Agentic Coding",
+      "status": "in-progress",
+      "tags": [],
+      "notes": "",
+      "createdAt": "2026-01-16T16:03:10.483Z",
+      "updatedAt": "2026-01-16T16:03:15.959Z",
+      "thumbnail": "https://i.ytimg.com/vi/J5B9UGTuNoM/hqdefault.jpg",
+      "author": "IndyDevDan",
+      "channelName": "IndyDevDan",
+      "id": "0I25OYK",
+      "transcript": "Welcome to this video about Claude Code Hooks. Today we are going to explore advanced agentic coding techniques. Hooks allow you to customize Claude Code behavior by running shell commands at specific points in the workflow. You can use pre-tool-use hooks to validate or modify tool inputs before execution. Post-tool-use hooks let you process results after tools complete. This enables powerful automation patterns like auto-formatting code, running linters, or triggering builds. The hooks system is incredibly flexible and opens up many possibilities for customizing your development workflow with Claude Code."
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=0teZqotpqT8",
+      "type": "youtube",
+      "title": "Stop Competing With 400 Applicants. Build This in One Weekend",
+      "author": "AI News & Strategy Daily | Nate B Jones",
+      "channelName": "AI News & Strategy Daily | Nate B Jones",
+      "thumbnail": "https://i.ytimg.com/vi/0teZqotpqT8/hqdefault.jpg",
+      "status": "backlog",
+      "tags": [
+        "ai",
+        "career",
+        "no-code"
+      ],
+      "categories": [
+        "AI & Machine Learning",
+        "Productivity"
+      ],
+      "notes": "",
+      "createdAt": "2026-01-16T20:00:00Z",
+      "updatedAt": "2026-01-16T20:00:00Z",
+      "id": "iiqURtW"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=hpDC29JdgjI",
+      "type": "youtube",
+      "title": "THIS is Why You're Still Slow Even With AI",
+      "author": "AI News & Strategy Daily | Nate B Jones",
+      "channelName": "AI News & Strategy Daily | Nate B Jones",
+      "thumbnail": "https://i.ytimg.com/vi/hpDC29JdgjI/hqdefault.jpg",
+      "status": "backlog",
+      "tags": [
+        "ai",
+        "productivity"
+      ],
+      "categories": [
+        "AI & Machine Learning",
+        "Productivity"
+      ],
+      "notes": "",
+      "createdAt": "2026-01-15T20:00:00Z",
+      "updatedAt": "2026-01-15T20:00:00Z",
+      "id": "suAmVQF"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=h7dbkDcb3hA",
+      "type": "youtube",
+      "title": "Anthropic's 10-Day Sprint Just Made Copilot Look Slow",
+      "author": "AI News & Strategy Daily | Nate B Jones",
+      "channelName": "AI News & Strategy Daily | Nate B Jones",
+      "thumbnail": "https://i.ytimg.com/vi/h7dbkDcb3hA/hqdefault.jpg",
+      "status": "backlog",
+      "tags": [
+        "ai",
+        "anthropic",
+        "copilot"
+      ],
+      "categories": [
+        "AI & Machine Learning",
+        "Programming"
+      ],
+      "notes": "",
+      "createdAt": "2026-01-14T20:00:00Z",
+      "updatedAt": "2026-01-14T20:00:00Z",
+      "id": "rEnhseJ"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=RVviMEfaJUY",
+      "type": "youtube",
+      "title": "Why Cursor, Claude Code, and MCP Make Me Optimistic for 2026",
+      "author": "AI News & Strategy Daily | Nate B Jones",
+      "channelName": "AI News & Strategy Daily | Nate B Jones",
+      "thumbnail": "https://i.ytimg.com/vi/RVviMEfaJUY/hqdefault.jpg",
+      "status": "backlog",
+      "tags": [
+        "ai",
+        "cursor",
+        "claude-code",
+        "mcp"
+      ],
+      "categories": [
+        "AI & Machine Learning",
+        "Programming"
+      ],
+      "notes": "",
+      "createdAt": "2026-01-13T20:00:00Z",
+      "updatedAt": "2026-01-13T20:00:00Z",
+      "id": "7L_7ek-"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=AzOJ9QLgfIk",
+      "type": "youtube",
+      "title": "If This Can Happen to an Ex-DeepMind Leader, It Can Happen to You",
+      "author": "AI News & Strategy Daily | Nate B Jones",
+      "channelName": "AI News & Strategy Daily | Nate B Jones",
+      "thumbnail": "https://i.ytimg.com/vi/AzOJ9QLgfIk/hqdefault.jpg",
+      "status": "backlog",
+      "tags": [
+        "ai",
+        "deepmind",
+        "career"
+      ],
+      "categories": [
+        "AI & Machine Learning",
+        "Self Improvement"
+      ],
+      "notes": "",
+      "createdAt": "2025-12-23T20:00:00Z",
+      "updatedAt": "2025-12-23T20:00:00Z",
+      "id": "vrhE9af"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=budTmdQfXYU",
+      "type": "youtube",
+      "title": "n8n AI IT Employee: Meet Terry",
+      "description": "Building an AI IT employee that monitors entire homelab 24/7, troubleshoots like a human, asks permission before fixing, and automatically handles issues",
+      "author": "NetworkChuck",
+      "channelName": "NetworkChuck",
+      "thumbnail": "https://i.ytimg.com/vi/budTmdQfXYU/hqdefault.jpg",
+      "status": "backlog",
+      "tags": [
+        "ai",
+        "n8n",
+        "homelab",
+        "automation"
+      ],
+      "categories": [
+        "AI & Machine Learning",
+        "DevOps"
+      ],
+      "notes": "",
+      "id": "vLBEUms"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=s96JeuuwLzc",
+      "type": "youtube",
+      "title": "n8n + Claude Code: Full Terminal Access Integration",
+      "description": "Making n8n run Claude Code directly with full terminal access - not just API calls. Claude can see files, read scripts, analyze logs, deploy agents, all from inside an n8n workflow",
+      "author": "NetworkChuck",
+      "channelName": "NetworkChuck",
+      "thumbnail": "https://i.ytimg.com/vi/s96JeuuwLzc/hqdefault.jpg",
+      "status": "backlog",
+      "tags": [
+        "ai",
+        "n8n",
+        "claude-code",
+        "automation"
+      ],
+      "categories": [
+        "AI & Machine Learning",
+        "DevOps"
+      ],
+      "notes": "",
+      "id": "p7mnV-B"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=bFgTxr5yst0",
+      "type": "youtube",
+      "title": "I built an AI Supercomputer... again (2TB RAM)",
+      "description": "Building a local AI supercomputer with 2TB of unified memory using 4 Mac Studios clustered together, capable of running 1 trillion parameter models locally",
+      "author": "NetworkChuck",
+      "channelName": "NetworkChuck",
+      "thumbnail": "https://i.ytimg.com/vi/bFgTxr5yst0/hqdefault.jpg",
+      "status": "backlog",
+      "tags": [
+        "ai",
+        "mac-studio",
+        "local-ai",
+        "hardware"
+      ],
+      "categories": [
+        "AI & Machine Learning",
+        "Programming"
+      ],
+      "notes": "",
+      "id": "t9wzipo"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=7TR-FLWNVHY",
+      "type": "youtube",
+      "title": "Is DeepSeek Safe to Run Locally?",
+      "description": "Testing whether local AI models like DeepSeek R1 are actually safe - checking if they access the internet and demonstrating safer ways to run local AI models",
+      "author": "NetworkChuck",
+      "channelName": "NetworkChuck",
+      "thumbnail": "https://i.ytimg.com/vi/7TR-FLWNVHY/hqdefault.jpg",
+      "status": "backlog",
+      "tags": [
+        "ai",
+        "deepseek",
+        "local-ai",
+        "security"
+      ],
+      "categories": [
+        "AI & Machine Learning",
+        "Programming"
+      ],
+      "notes": "",
+      "id": "0Hf2PQM"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=tbCKWX34_G4",
+      "type": "youtube",
+      "title": "you need to learn Frigate RIGHT NOW!!",
+      "description": "Complete guide for building a local AI surveillance system with Frigate NVR - includes Raspberry Pi + Hailo setup, desktop + Coral setup, and WiFi troubleshooting",
+      "author": "NetworkChuck",
+      "channelName": "NetworkChuck",
+      "thumbnail": "https://i.ytimg.com/vi/tbCKWX34_G4/hqdefault.jpg",
+      "status": "backlog",
+      "tags": [
+        "ai",
+        "frigate",
+        "home-assistant",
+        "surveillance"
+      ],
+      "categories": [
+        "AI & Machine Learning",
+        "DevOps"
+      ],
+      "notes": "",
+      "id": "3al3wQ0"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=f8RnRuaxee8",
+      "type": "youtube",
+      "title": "Claude 4 ADVANCED AI Coding: How I PARALLELIZE Claude Code with Git Worktrees",
+      "description": "Demonstrates using git worktrees to run multiple parallel Claude Code sessions - keeping workspaces separate to prevent AI agents from interfering with each other",
+      "author": "IndyDevDan",
+      "channelName": "IndyDevDan",
+      "thumbnail": "https://i.ytimg.com/vi/f8RnRuaxee8/hqdefault.jpg",
+      "status": "backlog",
+      "tags": [
+        "ai",
+        "claude-code",
+        "git",
+        "parallel-development"
+      ],
+      "categories": [
+        "AI & Machine Learning",
+        "Programming"
+      ],
+      "notes": "",
+      "id": "Vf0erQm"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=2TIXl2rlA6Q",
+      "type": "youtube",
+      "title": "Claude Code is PROGRAMMABLE: Scale Your AI Compute",
+      "description": "Understanding why Claude Code as a programmable agentic coding tool is important for next generation engineering - demonstrates programmatic usage in different languages",
+      "author": "IndyDevDan",
+      "channelName": "IndyDevDan",
+      "thumbnail": "https://i.ytimg.com/vi/2TIXl2rlA6Q/hqdefault.jpg",
+      "status": "backlog",
+      "tags": [
+        "ai",
+        "claude-code",
+        "agentic",
+        "programming"
+      ],
+      "categories": [
+        "AI & Machine Learning",
+        "Programming"
+      ],
+      "notes": "",
+      "id": "k0QhWv1"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=LvkZuY7rJOM",
+      "type": "youtube",
+      "title": "Voice to Claude Code: AI Coding by Voice",
+      "description": "Demonstrates how to control Claude Code using voice commands for hands-free agentic coding workflows",
+      "author": "IndyDevDan",
+      "channelName": "IndyDevDan",
+      "thumbnail": "https://i.ytimg.com/vi/LvkZuY7rJOM/hqdefault.jpg",
+      "status": "backlog",
+      "tags": [
+        "ai",
+        "claude-code",
+        "voice",
+        "accessibility"
+      ],
+      "categories": [
+        "AI & Machine Learning",
+        "Programming"
+      ],
+      "notes": "",
+      "id": "qnCLA6G"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=9ijnN985O_c",
+      "type": "youtube",
+      "title": "Claude Code Multi-Agent Observability System: Full Breakdown",
+      "description": "Complete observability into Claude Code agent behavior - capturing, storing, and visualizing Claude Code Hook events in real-time with session tracking and live updates",
+      "author": "IndyDevDan",
+      "channelName": "IndyDevDan",
+      "thumbnail": "https://i.ytimg.com/vi/9ijnN985O_c/hqdefault.jpg",
+      "status": "backlog",
+      "tags": [
+        "ai",
+        "claude-code",
+        "hooks",
+        "observability"
+      ],
+      "categories": [
+        "AI & Machine Learning",
+        "DevOps"
+      ],
+      "notes": "",
+      "id": "Pdzud7I"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=aA9KP7QIQvM",
+      "type": "youtube",
+      "title": "Haiku 4.5 vs Sonnet 4.5: Model Comparison for Claude Code",
+      "description": "Comparing Haiku 4.5 and Sonnet 4.5 models in Claude Code - analyzing performance, speed, and use cases for each model",
+      "author": "IndyDevDan",
+      "channelName": "IndyDevDan",
+      "thumbnail": "https://i.ytimg.com/vi/aA9KP7QIQvM/hqdefault.jpg",
+      "status": "backlog",
+      "tags": [
+        "ai",
+        "claude-code",
+        "haiku",
+        "sonnet"
+      ],
+      "categories": [
+        "AI & Machine Learning",
+        "Programming"
+      ],
+      "notes": "",
+      "id": "6bT5rE8"
+    }
+  ],
+  "tags": [
+    {
+      "id": "1",
+      "name": "programming",
+      "color": "#3B82F6"
+    },
+    {
+      "id": "2",
+      "name": "ai",
+      "color": "#8B5CF6"
+    },
+    {
+      "id": "3",
+      "name": "productivity",
+      "color": "#10B981"
+    },
+    {
+      "id": "4",
+      "name": "architecture",
+      "color": "#F59E0B"
+    },
+    {
+      "id": "5",
+      "name": "self-improvement",
+      "color": "#EC4899"
+    }
+  ]
+}
