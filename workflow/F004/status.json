@@ -1,0 +1,41 @@
+{
+  "workflowId": "F004",
+  "type": "feature",
+  "title": "Article/Web Page Enrichment",
+  "createdAt": "2026-01-17T17:32:58-05:00",
+  "currentStage": "requirements",
+  "stages": {
+    "requirements": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "agent": null,
+      "output": "1-requirements.md"
+    },
+    "architecture": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "agent": null,
+      "output": "2-architecture.md"
+    },
+    "implementation": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "agent": null,
+      "output": "3-implementation.md"
+    },
+    "qa": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "agent": null,
+      "output": "4-qa-report.md"
+    }
+  },
+  "branch": "feature/F004",
+  "worktree": "../war-goat-f004",
+  "bugs": [],
+  "notes": []
+}
