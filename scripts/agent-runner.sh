@@ -101,24 +101,12 @@ echo ""
 # Run Claude with the workflow command
 COMMAND="${STAGE_COMMAND[$STAGE]} ${WORKFLOW_ID}"
 
-echo ""
-echo -e "${GREEN}════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}  Run this command when Claude starts:${NC}"
-echo ""
-echo -e "  ${YELLOW}${COMMAND}${NC}"
-echo ""
-echo -e "${GREEN}════════════════════════════════════════════════════════════════${NC}"
-echo ""
-
-log "Starting Claude session..."
-log "Type the command above (or paste it) when Claude is ready."
+log "Starting Claude session with command: ${COMMAND}"
 log "When the stage is complete, type /exit or Ctrl+C to continue to next stage."
 echo ""
 
-# Run Claude interactively - user can answer questions
-# The user will type/paste the workflow command
-# When done, user exits Claude (Ctrl+C or /exit) and script continues
-claude
+# Run Claude with the workflow command auto-executed via -p flag
+claude -p "${COMMAND}"
 
 CLAUDE_EXIT=$?
 
