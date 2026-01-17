@@ -366,7 +366,10 @@ retry_count: 3
 5. Update `workflow/{WORK_ITEM_ID}/status.json`
 
 6. If APPROVED:
-   - Update work item status in `docs/work-items/` or via Beans
+   - Update Beans issue status:
+     ```bash
+     beans update <bean-id> -s completed
+     ```
    - The implementation can be merged
 
 7. If REJECTED:
