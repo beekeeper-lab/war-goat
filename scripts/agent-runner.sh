@@ -105,8 +105,10 @@ log "Starting Claude session with command: ${COMMAND}"
 log "When the stage is complete, type /exit or Ctrl+C to continue to next stage."
 echo ""
 
-# Run Claude with the workflow command auto-executed via -p flag
-claude -p "${COMMAND}"
+# Run Claude with the workflow command auto-executed
+# --dangerously-skip-permissions allows autonomous operation
+# TODO: Add hooks for safety guardrails (see .claude/hooks/)
+claude --dangerously-skip-permissions -p "${COMMAND}"
 
 CLAUDE_EXIT=$?
 
