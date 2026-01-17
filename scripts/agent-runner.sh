@@ -108,7 +108,8 @@ echo ""
 # Run Claude with the workflow command auto-executed
 # --dangerously-skip-permissions allows autonomous operation
 # TODO: Add hooks for safety guardrails (see .claude/hooks/)
-claude --dangerously-skip-permissions -p "${COMMAND}"
+# The prompt is passed as a positional argument (not -p which is print mode)
+claude --dangerously-skip-permissions "${COMMAND}"
 
 CLAUDE_EXIT=$?
 
