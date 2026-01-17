@@ -1,0 +1,41 @@
+{
+  "workflowId": "F003",
+  "type": "feature",
+  "title": "GitHub Repository Enrichment",
+  "createdAt": "2026-01-17T17:11:38-05:00",
+  "currentStage": "requirements",
+  "stages": {
+    "requirements": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "agent": null,
+      "output": "1-requirements.md"
+    },
+    "architecture": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "agent": null,
+      "output": "2-architecture.md"
+    },
+    "implementation": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "agent": null,
+      "output": "3-implementation.md"
+    },
+    "qa": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "agent": null,
+      "output": "4-qa-report.md"
+    }
+  },
+  "branch": "feature/F003",
+  "worktree": "../war-goat-f003",
+  "bugs": [],
+  "notes": []
+}

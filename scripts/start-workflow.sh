@@ -56,8 +56,17 @@ log "Title: ${TITLE}"
 log "Branch: ${BRANCH_NAME}"
 log "Worktree: ${WORKTREE_PATH}"
 
-# Check if we're in tmux
-if [ -z "$TMUX" ]; then
+# Check if tmux is available
+if ! command -v tmux &> /dev/null; then
+    warn "tmux is not installed!"
+    warn "For the best multi-agent experience, install tmux:"
+    warn "  sudo apt install tmux  # Debian/Ubuntu"
+    warn "  sudo pacman -S tmux    # Arch"
+    warn "  brew install tmux      # macOS"
+    echo ""
+    warn "Running in single-terminal mode (agents will run sequentially here)..."
+    IN_TMUX=false
+elif [ -z "$TMUX" ]; then
     log "Not running in tmux - starting tmux session 'workflow'..."
 
     # Check if workflow session already exists
@@ -68,9 +77,9 @@ if [ -z "$TMUX" ]; then
         # Start new tmux session and run this script inside it
         exec tmux new-session -s workflow "$0 $*"
     fi
+else
+    IN_TMUX=true
 fi
-
-IN_TMUX=true
 
 # Step 1: Create workflow directory (if not exists)
 log "Creating workflow directory..."
@@ -104,28 +113,47 @@ if [ ! -d "${WORKTREE_PATH}/workflow/${WORKFLOW_ID}" ]; then
     cp -r "${PROJECT_ROOT}/workflow/${WORKFLOW_ID}" "${WORKTREE_PATH}/workflow/"
 fi
 
-# Step 4: Launch agent in tmux pane
-log "Launching agent in new tmux pane..."
+# Step 4: Launch agent
+if [ "$IN_TMUX" = true ]; then
+    log "Launching agent in new tmux pane..."
 
-# Create new pane and run agent
-tmux split-window -h -c "$WORKTREE_PATH" \
-    "${SCRIPT_DIR}/agent-runner.sh ${WORKFLOW_ID} requirements ${WORKTREE_PATH}"
+    # Create new pane and run agent
+    tmux split-window -h -c "$WORKTREE_PATH" \
+        "${SCRIPT_DIR}/agent-runner.sh ${WORKFLOW_ID} requirements ${WORKTREE_PATH}"
 
-# Name the pane
-tmux select-pane -T "${WORKFLOW_ID}"
+    # Name the pane
+    tmux select-pane -T "${WORKFLOW_ID}"
 
-success "Agent launched in tmux pane!"
-echo ""
-echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  Workflow ${WORKFLOW_ID} started!                            ║"
-echo "╠══════════════════════════════════════════════════════════════╣"
-echo "║  • Agent is running in the pane to the right                 ║"
-echo "║  • Switch panes: Ctrl+b → (arrow keys)                       ║"
-echo "║  • If agent has questions, answer in its pane                ║"
-echo "║  • Stages auto-chain: req → arch → impl → qa → PR            ║"
-echo "╚══════════════════════════════════════════════════════════════╝"
-echo ""
-echo "Monitor status:"
-echo "  beans list"
-echo "  ./scripts/workflow.sh status ${WORKFLOW_ID}"
-echo ""
+    success "Agent launched in tmux pane!"
+    echo ""
+    echo "╔══════════════════════════════════════════════════════════════╗"
+    echo "║  Workflow ${WORKFLOW_ID} started!                            ║"
+    echo "╠══════════════════════════════════════════════════════════════╣"
+    echo "║  • Agent is running in the pane to the right                 ║"
+    echo "║  • Switch panes: Ctrl+b → (arrow keys)                       ║"
+    echo "║  • If agent has questions, answer in its pane                ║"
+    echo "║  • Stages auto-chain: req → arch → impl → qa → PR            ║"
+    echo "╚══════════════════════════════════════════════════════════════╝"
+    echo ""
+    echo "Monitor status:"
+    echo "  beans list"
+    echo "  ./scripts/workflow.sh status ${WORKFLOW_ID}"
+    echo ""
+else
+    # No tmux - run agent directly in current terminal
+    success "Workflow ${WORKFLOW_ID} ready!"
+    echo ""
+    echo "╔══════════════════════════════════════════════════════════════╗"
+    echo "║  Workflow ${WORKFLOW_ID} created!                            ║"
+    echo "╠══════════════════════════════════════════════════════════════╣"
+    echo "║  Worktree: ${WORKTREE_PATH}                                  ║"
+    echo "║  Branch: ${BRANCH_NAME}                                      ║"
+    echo "╠══════════════════════════════════════════════════════════════╣"
+    echo "║  Launching agent in this terminal...                         ║"
+    echo "║  Stages will auto-chain: req → arch → impl → qa → PR         ║"
+    echo "╚══════════════════════════════════════════════════════════════╝"
+    echo ""
+
+    # Run agent directly
+    exec "${SCRIPT_DIR}/agent-runner.sh" "$WORKFLOW_ID" requirements "$WORKTREE_PATH"
+fi
