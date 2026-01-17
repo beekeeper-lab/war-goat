@@ -14,9 +14,12 @@ import {
   ChevronUp,
   Loader2,
   FileDown,
+  Clock,
+  Sparkles,
+  BookOpen,
 } from 'lucide-react';
-import type { InterestItem, ItemStatus, UpdateInterestInput } from '../types';
-import { fetchTranscript } from '../services/api';
+import type { InterestItem, ItemStatus, UpdateInterestInput, ArticleSummary } from '../types';
+import { fetchTranscript, fetchArticleContent, generateArticleSummary } from '../services/api';
 
 interface InterestDetailProps {
   item: InterestItem;
@@ -52,9 +55,17 @@ export function InterestDetail({
   const [transcriptExpanded, setTranscriptExpanded] = useState(false);
   const [transcript, setTranscript] = useState<string | null>(item.transcript || null);
   const [transcriptLoading, setTranscriptLoading] = useState(false);
+  // Article state
+  const [articleExpanded, setArticleExpanded] = useState(false);
+  const [articleContent, setArticleContent] = useState<string | null>(item.articleContent || null);
+  const [articleLoading, setArticleLoading] = useState(false);
+  const [summary, setSummary] = useState<ArticleSummary | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   const TypeIcon = TYPE_ICONS[item.type];
   const hasTranscript = item.hasTranscript || item.transcript;
+  const hasArticleContent = item.hasArticleContent || item.articleContent;
 
   // Fetch transcript on-demand when expanded
   useEffect(() => {
@@ -72,6 +83,37 @@ export function InterestDetail({
         });
     }
   }, [transcriptExpanded, transcript, hasTranscript, item.id]);
+
+  // Fetch article content on-demand when expanded
+  useEffect(() => {
+    if (articleExpanded && !articleContent && hasArticleContent) {
+      setArticleLoading(true);
+      fetchArticleContent(item.id)
+        .then((data) => {
+          setArticleContent(data);
+        })
+        .catch((err) => {
+          console.error('Failed to fetch article content:', err);
+        })
+        .finally(() => {
+          setArticleLoading(false);
+        });
+    }
+  }, [articleExpanded, articleContent, hasArticleContent, item.id]);
+
+  // Handle generating AI summary
+  const handleGenerateSummary = async () => {
+    setSummaryLoading(true);
+    setSummaryError(null);
+    try {
+      const result = await generateArticleSummary(item.id);
+      setSummary(result);
+    } catch (err) {
+      setSummaryError(err instanceof Error ? err.message : 'Failed to generate summary');
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -118,6 +160,28 @@ export function InterestDetail({
             <h2 className="text-xl font-semibold text-gray-900">{item.title}</h2>
             {item.author && (
               <p className="text-gray-600 mt-1">by {item.author}</p>
+            )}
+            {/* Article metadata */}
+            {(item.siteName || item.readingTime || item.wordCount) && (
+              <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
+                {item.siteName && (
+                  <span>{item.siteName}</span>
+                )}
+                {item.readingTime && (
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {item.readingTime} min read
+                  </span>
+                )}
+                {item.wordCount && (
+                  <span>{item.wordCount.toLocaleString()} words</span>
+                )}
+                {item.isDocumentation && (
+                  <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">
+                    Documentation
+                  </span>
+                )}
+              </div>
             )}
           </div>
 
@@ -207,6 +271,120 @@ export function InterestDetail({
                     )}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Article Reader Section */}
+            {hasArticleContent && (
+              <div className="rounded-lg border border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setArticleExpanded(!articleExpanded)}
+                  className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 rounded-lg"
+                >
+                  <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <BookOpen className="w-4 h-4" />
+                    Read Article
+                  </span>
+                  {articleExpanded ? (
+                    <ChevronUp className="w-4 h-4 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                  )}
+                </button>
+                {articleExpanded && (
+                  <div className="border-t border-gray-200">
+                    {articleLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                        <span className="ml-2 text-sm text-gray-500">Loading article content...</span>
+                      </div>
+                    ) : articleContent ? (
+                      <div className="p-4 max-h-96 overflow-y-auto">
+                        <div className="prose prose-sm prose-gray max-w-none">
+                          <p className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                            {articleContent}
+                          </p>
+                        </div>
+                        {item.truncated && (
+                          <div className="mt-4 p-3 bg-amber-50 text-amber-700 rounded-lg text-sm">
+                            Content was truncated. The original article may be longer.
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="p-4">
+                        <p className="text-sm text-gray-500 italic">Article content not available</p>
+                        {item.articleError && (
+                          <p className="text-sm text-red-600 mt-2">{item.articleError}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* AI Summary Section */}
+            {hasArticleContent && (
+              <div className="rounded-lg border border-gray-200">
+                <div className="p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
+                      AI Summary
+                    </span>
+                    {!summary && (
+                      <button
+                        type="button"
+                        onClick={handleGenerateSummary}
+                        disabled={summaryLoading}
+                        className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded hover:bg-purple-200 disabled:opacity-50 flex items-center gap-1"
+                      >
+                        {summaryLoading ? (
+                          <>
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          'Generate Summary'
+                        )}
+                      </button>
+                    )}
+                  </div>
+                  {summaryError && (
+                    <p className="text-sm text-red-600 mt-2">{summaryError}</p>
+                  )}
+                  {summary && (
+                    <div className="mt-3 space-y-3">
+                      <div>
+                        <p className="text-sm text-gray-700">{summary.summary}</p>
+                      </div>
+                      {summary.keyPoints && summary.keyPoints.length > 0 && (
+                        <div>
+                          <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Key Points</h4>
+                          <ul className="text-sm text-gray-700 list-disc list-inside space-y-1">
+                            {summary.keyPoints.map((point, i) => (
+                              <li key={i}>{point}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {summary.suggestedTags && summary.suggestedTags.length > 0 && (
+                        <div>
+                          <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Suggested Tags</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {summary.suggestedTags.map((tag, i) => (
+                              <span key={i} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

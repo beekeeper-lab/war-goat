@@ -38,3 +38,31 @@ export async function enrichUrl(url: string): Promise<EnrichResult> {
 export function isYouTubeUrl(url: string): boolean {
   return /youtube\.com|youtu\.be/.test(url);
 }
+
+// Check if URL is an article URL (http(s) URLs not matching other patterns)
+export function isArticleUrl(url: string): boolean {
+  if (!url) return false;
+
+  // Must be HTTP or HTTPS
+  if (!/^https?:\/\//i.test(url)) {
+    return false;
+  }
+
+  // Exclude known non-article patterns
+  const excludePatterns = [
+    /youtube\.com/,
+    /youtu\.be/,
+    /github\.com\/[\w-]+\/[\w-]+\/?(?:\?.*)?$/,
+    /spotify\.com/,
+    /podcasts\.apple\.com/,
+    /audible\.com/,
+  ];
+
+  for (const pattern of excludePatterns) {
+    if (pattern.test(url)) {
+      return false;
+    }
+  }
+
+  return true;
+}

@@ -53,3 +53,15 @@ export {
   clearCache as clearBraveSearchCache,
   getCacheSize as getBraveSearchCacheSize,
 } from './brave-search.js';
+
+// Article service
+export {
+  isArticleUrl,
+  detectDocumentationSite,
+  extractMetadata,
+  detectSeries,
+  extractArticle,
+  fetchAndExtract,
+  enrichArticleUrl,
+  generateArticleSummary,
+} from './article.js';

@@ -29,6 +29,9 @@ import {
   newsSearch,
   videoSearch,
   relatedSearch,
+  isArticleUrl,
+  enrichArticleUrl,
+  generateArticleSummary,
 } from './services/index.js';
 
 const require = createRequire(import.meta.url);
@@ -36,6 +39,7 @@ const jsonServer = require('json-server');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TRANSCRIPTS_DIR = path.join(__dirname, '..', 'data', 'transcripts');
+const ARTICLES_DIR = path.join(__dirname, '..', 'data', 'articles');
 
 const app = express();
 const PORT = 3001;
@@ -78,12 +82,46 @@ async function writeTranscript(itemId, content) {
 }
 
 // ============================================================================
+// Article File Storage
+// ============================================================================
+
+async function ensureArticlesDir() {
+  if (!existsSync(ARTICLES_DIR)) {
+    await mkdir(ARTICLES_DIR, { recursive: true });
+  }
+}
+
+function getArticlePath(itemId) {
+  return path.join(ARTICLES_DIR, `${itemId}.txt`);
+}
+
+async function readArticleContent(itemId) {
+  const filePath = getArticlePath(itemId);
+  if (!existsSync(filePath)) {
+    return null;
+  }
+  try {
+    return await readFile(filePath, 'utf-8');
+  } catch (err) {
+    console.error(`Failed to read article for ${itemId}:`, err);
+    return null;
+  }
+}
+
+async function writeArticleContent(itemId, content) {
+  await ensureArticlesDir();
+  const filePath = getArticlePath(itemId);
+  await writeFile(filePath, content, 'utf-8');
+  console.log(`Article content saved: ${filePath}`);
+}
+
+// ============================================================================
 // API Routes
 // ============================================================================
 
 /**
  * POST /api/enrich
- * Enrich a URL with metadata and transcript (for YouTube)
+ * Enrich a URL with metadata and content (for YouTube and articles)
  */
 app.post('/api/enrich', async (req, res) => {
   const { url } = req.body;
@@ -105,8 +143,18 @@ app.post('/api/enrich', async (req, res) => {
       return res.json(result);
     }
 
-    // For non-YouTube URLs, return basic info
-    // Future: Add enrichment for other source types
+    // Check if it's an article URL
+    if (isArticleUrl(url)) {
+      const result = await enrichArticleUrl(url);
+      console.log(`[Enrich] Article enrichment complete:`, {
+        title: result.data?.title,
+        hasArticleContent: result.data?.hasArticleContent,
+        wordCount: result.data?.wordCount,
+      });
+      return res.json(result);
+    }
+
+    // For other URLs, return basic info
     return res.json({
       success: true,
       type: 'other',
@@ -219,6 +267,85 @@ app.post('/api/transcripts/:id', async (req, res) => {
   } catch (err) {
     console.error('Failed to save transcript:', err);
     res.status(500).json({ error: 'Failed to save transcript' });
+  }
+});
+
+// ============================================================================
+// Article Content Routes
+// ============================================================================
+
+/**
+ * GET /api/articles/:id
+ * Retrieve article content for an item
+ */
+app.get('/api/articles/:id', async (req, res) => {
+  const { id } = req.params;
+  const content = await readArticleContent(id);
+
+  if (content === null) {
+    return res.status(404).json({
+      id,
+      error: 'Article content not found',
+      content: null,
+    });
+  }
+
+  res.json({ id, content });
+});
+
+/**
+ * PUT /api/articles/:id
+ * Save article content for an item
+ */
+app.put('/api/articles/:id', async (req, res) => {
+  const { id } = req.params;
+  const { content } = req.body;
+
+  if (!content) {
+    return res.status(400).json({ error: 'Article content is required' });
+  }
+
+  try {
+    await writeArticleContent(id, content);
+    res.json({ id, success: true });
+  } catch (err) {
+    console.error('Failed to save article content:', err);
+    res.status(500).json({ error: 'Failed to save article content' });
+  }
+});
+
+/**
+ * POST /api/articles/:id/summary
+ * Generate AI summary for an article
+ */
+app.post('/api/articles/:id/summary', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Get article content
+    const content = await readArticleContent(id);
+
+    if (!content) {
+      return res.status(404).json({ error: 'Article content not found' });
+    }
+
+    // Get item title from database
+    const dbPath = path.join(__dirname, '..', 'db.json');
+    const db = JSON.parse(await readFile(dbPath, 'utf-8'));
+    const item = db.interests?.find(i => i.id === id);
+    const title = item?.title || 'Article';
+
+    // Generate summary
+    const summary = await generateArticleSummary(content, title);
+
+    if (!summary) {
+      return res.status(500).json({ error: 'Failed to generate summary. Check API key configuration.' });
+    }
+
+    res.json({ id, summary });
+  } catch (err) {
+    console.error('Failed to generate article summary:', err);
+    res.status(500).json({ error: 'Failed to generate summary' });
   }
 });
 

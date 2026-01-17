@@ -3,7 +3,7 @@
   "type": "feature",
   "title": "Article/Web Page Enrichment",
   "createdAt": "2026-01-17T17:32:58-05:00",
-  "currentStage": "architecture",
+  "currentStage": "qa",
   "stages": {
     "requirements": {
       "status": "complete",
@@ -13,24 +13,24 @@
       "output": "1-requirements.md"
     },
     "architecture": {
-      "status": "pending",
-      "startedAt": null,
-      "completedAt": null,
-      "agent": null,
+      "status": "complete",
+      "startedAt": "2026-01-17T18:30:00-05:00",
+      "completedAt": "2026-01-17T19:15:00-05:00",
+      "agent": "architecture-agent",
       "output": "2-architecture.md"
     },
     "implementation": {
-      "status": "pending",
-      "startedAt": null,
-      "completedAt": null,
-      "agent": null,
+      "status": "complete",
+      "startedAt": "2026-01-17T19:16:00-05:00",
+      "completedAt": "2026-01-17T19:45:00-05:00",
+      "agent": "implementor-agent",
       "output": "3-implementation.md"
     },
     "qa": {
-      "status": "pending",
-      "startedAt": null,
-      "completedAt": null,
-      "agent": null,
+      "status": "complete",
+      "startedAt": "2026-01-17T18:24:00-05:00",
+      "completedAt": "2026-01-17T18:28:00-05:00",
+      "agent": "qa-agent",
       "output": "4-qa-report.md"
     }
   },
