@@ -41,3 +41,15 @@ export {
   syncAll as syncAllToObsidian,
   generateStudyNotes,
 } from './obsidian.js';
+
+// Brave Search service
+export {
+  isAvailable as isBraveSearchAvailable,
+  webSearch,
+  newsSearch,
+  videoSearch,
+  relatedSearch,
+  buildRelatedQuery,
+  clearCache as clearBraveSearchCache,
+  getCacheSize as getBraveSearchCacheSize,
+} from './brave-search.js';
