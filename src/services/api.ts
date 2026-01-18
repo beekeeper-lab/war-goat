@@ -6,6 +6,10 @@ import type {
   ObsidianExportOptions,
   ObsidianExportResult,
   ObsidianSyncResult,
+  SearchOptions,
+  SearchResponse,
+  RelatedSearchResponse,
+  BraveSearchStatus,
 } from '../types';
 import { categorizeItem } from './categorize';
 
@@ -219,4 +223,75 @@ export async function syncToObsidian(
       })
       .catch(reject);
   });
+}
+
+// ============================================================================
+// Brave Search API Functions
+// ============================================================================
+
+/**
+ * Get Brave Search availability status
+ */
+export async function getSearchStatus(): Promise<BraveSearchStatus> {
+  try {
+    const response = await fetch(`${API_BASE}/search/status`);
+    if (!response.ok) {
+      return { available: false, error: 'Failed to check status' };
+    }
+    return response.json();
+  } catch (err) {
+    return { available: false, error: 'Failed to connect to search service' };
+  }
+}
+
+/**
+ * Perform a search using Brave Search
+ */
+export async function search(options: SearchOptions): Promise<SearchResponse> {
+  const response = await fetch(`${API_BASE}/search`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(options),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    return {
+      success: false,
+      results: [],
+      query: options.query,
+      error: data.error || 'Search failed',
+    };
+  }
+
+  return data;
+}
+
+/**
+ * Search for content related to an existing interest
+ */
+export async function searchRelated(
+  interestId: string,
+  options: { count?: number; freshness?: string } = {}
+): Promise<RelatedSearchResponse> {
+  const response = await fetch(`${API_BASE}/search/related/${interestId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(options),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    return {
+      success: false,
+      results: [],
+      query: '',
+      generatedQuery: '',
+      error: data.error || 'Related search failed',
+    };
+  }
+
+  return data;
 }

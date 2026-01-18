@@ -11,6 +11,7 @@ import {
   Clock,
   CheckCircle,
   Circle,
+  Search,
 } from 'lucide-react';
 import type { InterestItem, ItemStatus } from '../types';
 import { ExportToObsidianButton } from './ExportToObsidianButton';
@@ -21,7 +22,9 @@ interface InterestCardProps {
   onDelete: (id: string) => void;
   onClick: () => void;
   onExportToObsidian?: () => void;
+  onFindRelated?: () => void;
   obsidianConnected?: boolean;
+  searchAvailable?: boolean;
 }
 
 const TYPE_ICONS = {
@@ -56,7 +59,9 @@ export function InterestCard({
   onDelete,
   onClick,
   onExportToObsidian,
+  onFindRelated,
   obsidianConnected = false,
+  searchAvailable = false,
 }: InterestCardProps) {
   const TypeIcon = TYPE_ICONS[item.type];
   const typeColor = TYPE_COLORS[item.type];
@@ -111,6 +116,18 @@ export function InterestCard({
             </div>
 
             <div className="flex items-center gap-1 flex-shrink-0">
+              {onFindRelated && searchAvailable && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFindRelated();
+                  }}
+                  className="p-1.5 text-gray-400 hover:text-olive-600 rounded hover:bg-olive-50"
+                  title="Find related content"
+                >
+                  <Search className="w-4 h-4" />
+                </button>
+              )}
               {onExportToObsidian && (
                 <ExportToObsidianButton
                   item={item}

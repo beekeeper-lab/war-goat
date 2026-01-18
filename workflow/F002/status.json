@@ -1,0 +1,41 @@
+{
+  "workflowId": "F002",
+  "type": "feature",
+  "title": "Brave Search Integration",
+  "createdAt": "2026-01-17T19:24:05-05:00",
+  "currentStage": "implementation",
+  "stages": {
+    "requirements": {
+      "status": "complete",
+      "startedAt": "2026-01-17T19:25:00-05:00",
+      "completedAt": "2026-01-17T19:55:00-05:00",
+      "agent": "Requirements Agent",
+      "output": "1-requirements.md"
+    },
+    "architecture": {
+      "status": "complete",
+      "startedAt": "2026-01-17T20:00:00-05:00",
+      "completedAt": "2026-01-17T20:35:00-05:00",
+      "agent": "Architecture Agent",
+      "output": "2-architecture.md"
+    },
+    "implementation": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "agent": null,
+      "output": "3-implementation.md"
+    },
+    "qa": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "agent": null,
+      "output": "4-qa-report.md"
+    }
+  },
+  "branch": "feature/F002",
+  "worktree": "../war-goat-f002",
+  "bugs": [],
+  "notes": []
+}

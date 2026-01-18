@@ -23,6 +23,13 @@ import {
   updateNoteFrontmatter,
   syncAllToObsidian,
 } from './services/index.js';
+import {
+  isBraveSearchAvailable,
+  webSearch,
+  newsSearch,
+  videoSearch,
+  relatedSearch,
+} from './services/index.js';
 
 const require = createRequire(import.meta.url);
 const jsonServer = require('json-server');
@@ -329,6 +336,128 @@ app.post('/api/sync-obsidian', async (req, res) => {
     console.error('[Obsidian] Sync failed:', err);
     res.write(`data: ${JSON.stringify({ type: 'error', error: err.message })}\n\n`);
     res.end();
+  }
+});
+
+// ============================================================================
+// Brave Search Integration Routes
+// ============================================================================
+
+/**
+ * GET /api/search/status
+ * Check if Brave Search is available (API key configured)
+ */
+app.get('/api/search/status', (req, res) => {
+  const available = isBraveSearchAvailable();
+  res.json({
+    available,
+    error: available ? undefined : 'BRAVE_API_KEY not configured',
+  });
+});
+
+/**
+ * POST /api/search
+ * Perform web, news, or video search
+ */
+app.post('/api/search', async (req, res) => {
+  const { query, type = 'web', freshness, count = 10, summary = false } = req.body;
+
+  if (!query) {
+    return res.status(400).json({
+      success: false,
+      error: 'Query is required',
+      results: [],
+    });
+  }
+
+  // Truncate query to 400 characters
+  const truncatedQuery = query.slice(0, 400);
+  const wasTruncated = query.length > 400;
+
+  if (!isBraveSearchAvailable()) {
+    return res.status(503).json({
+      success: false,
+      error: 'Brave Search not available - BRAVE_API_KEY not configured',
+      results: [],
+    });
+  }
+
+  console.log(`[Search] ${type} search: "${truncatedQuery}"`);
+
+  try {
+    let result;
+
+    switch (type) {
+      case 'news':
+        result = await newsSearch(truncatedQuery, { freshness, count });
+        break;
+      case 'video':
+        result = await videoSearch(truncatedQuery, { freshness, count });
+        break;
+      case 'web':
+      default:
+        result = await webSearch(truncatedQuery, { freshness, count, summary });
+        break;
+    }
+
+    // Add truncation warning if applicable
+    if (wasTruncated) {
+      result.warning = 'Query was truncated to 400 characters';
+    }
+
+    res.json(result);
+  } catch (err) {
+    console.error('[Search] Failed:', err);
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      results: [],
+    });
+  }
+});
+
+/**
+ * POST /api/search/related/:id
+ * Find content related to an existing interest
+ */
+app.post('/api/search/related/:id', async (req, res) => {
+  const { id } = req.params;
+  const { count = 10, freshness } = req.body || {};
+
+  if (!isBraveSearchAvailable()) {
+    return res.status(503).json({
+      success: false,
+      error: 'Brave Search not available - BRAVE_API_KEY not configured',
+      results: [],
+    });
+  }
+
+  try {
+    // Get interest from database
+    const dbPath = path.join(__dirname, '..', 'db.json');
+    const db = JSON.parse(await readFile(dbPath, 'utf-8'));
+    const item = db.interests?.find((i) => i.id === id);
+
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        error: 'Interest not found',
+        results: [],
+      });
+    }
+
+    console.log(`[Search] Related search for: "${item.title}"`);
+
+    const result = await relatedSearch(item, { count, freshness });
+
+    res.json(result);
+  } catch (err) {
+    console.error('[Search] Related search failed:', err);
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      results: [],
+    });
   }
 });
 

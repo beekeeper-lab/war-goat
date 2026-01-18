@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { FilterBar } from './components/FilterBar';
 import { InterestList } from './components/InterestList';
@@ -6,10 +6,12 @@ import { AddInterestModal } from './components/AddInterestModal';
 import { InterestDetail } from './components/InterestDetail';
 import { ObsidianExportModal } from './components/ObsidianExportModal';
 import { SyncProgress } from './components/SyncProgress';
+import { SearchModal } from './components/SearchModal';
 import { useInterests } from './hooks/useInterests';
 import { useObsidianStatus } from './hooks/useObsidianStatus';
-import { exportToObsidian, syncToObsidian } from './services/api';
-import type { InterestItem, SourceType, ItemStatus, EnrichedCreateInput, ObsidianExportOptions } from './types';
+import { useSearchStatus } from './hooks/useSearch';
+import { exportToObsidian, syncToObsidian, searchRelated } from './services/api';
+import type { InterestItem, SourceType, ItemStatus, EnrichedCreateInput, ObsidianExportOptions, SearchResult } from './types';
 
 export default function App() {
   const {
@@ -22,8 +24,11 @@ export default function App() {
   } = useInterests();
 
   const { isConnected: obsidianConnected } = useObsidianStatus();
+  const { isAvailable: searchAvailable } = useSearchStatus();
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchInitialQuery, setSearchInitialQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<InterestItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<SourceType | 'all'>('all');
@@ -160,13 +165,60 @@ export default function App() {
     });
   };
 
+  // Search handlers
+  const openSearch = useCallback((initialQuery = '') => {
+    setSearchInitialQuery(initialQuery);
+    setShowSearchModal(true);
+  }, []);
+
+  const closeSearch = useCallback(() => {
+    setShowSearchModal(false);
+    setSearchInitialQuery('');
+  }, []);
+
+  const handleAddFromSearch = useCallback(async (result: SearchResult) => {
+    await addInterest({
+      url: result.url,
+      title: result.title,
+      description: result.description,
+      thumbnail: result.thumbnail,
+      type: result.type === 'video' ? 'youtube' : 'article',
+      status: 'backlog',
+      tags: [],
+    });
+  }, [addInterest]);
+
+  const handleFindRelated = useCallback(async (item: InterestItem) => {
+    const response = await searchRelated(item.id);
+    if (response.success && response.generatedQuery) {
+      openSearch(response.generatedQuery);
+    }
+  }, [openSearch]);
+
+  // Keyboard shortcut for search (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        if (searchAvailable) {
+          openSearch();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [searchAvailable, openSearch]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header
         onAddClick={() => setShowAddModal(true)}
+        onSearchClick={() => openSearch()}
         onSyncClick={handleSyncAll}
         syncing={syncState.active}
         obsidianConnected={obsidianConnected}
+        searchAvailable={searchAvailable}
       />
 
       <FilterBar
@@ -197,7 +249,9 @@ export default function App() {
           onDelete={deleteInterest}
           onItemClick={setSelectedItem}
           onExportToObsidian={setExportItem}
+          onFindRelated={handleFindRelated}
           obsidianConnected={obsidianConnected}
+          searchAvailable={searchAvailable}
         />
       </main>
 
@@ -239,6 +293,13 @@ export default function App() {
         result={syncState.result}
         error={syncState.error}
         onClose={closeSyncProgress}
+      />
+
+      <SearchModal
+        isOpen={showSearchModal}
+        onClose={closeSearch}
+        onAddToInterests={handleAddFromSearch}
+        initialQuery={searchInitialQuery}
       />
     </div>
   );

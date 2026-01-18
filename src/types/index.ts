@@ -177,3 +177,62 @@ export interface StudyNotes {
   relatedTopics: string[];
   actionItems: string[];
 }
+
+// ============================================================================
+// Brave Search Integration Types
+// ============================================================================
+
+/**
+ * Search result from Brave Search API
+ */
+export interface SearchResult {
+  title: string;
+  url: string;
+  description: string;
+  thumbnail?: string;
+  publishedDate?: string;
+  source: string;
+  type: 'web' | 'news' | 'video';
+  // Video-specific
+  duration?: string;
+  // News-specific
+  age?: string;
+}
+
+/**
+ * Search request options
+ */
+export interface SearchOptions {
+  query: string;
+  type?: 'web' | 'news' | 'video';
+  freshness?: 'pd' | 'pw' | 'pm' | 'py'; // past day/week/month/year
+  count?: number;
+  summary?: boolean;
+}
+
+/**
+ * Search response from the API
+ */
+export interface SearchResponse {
+  success: boolean;
+  results: SearchResult[];
+  summary?: string;
+  query: string;
+  cached?: boolean;
+  error?: string;
+}
+
+/**
+ * Related search response (includes the generated query)
+ */
+export interface RelatedSearchResponse extends SearchResponse {
+  generatedQuery: string;
+}
+
+/**
+ * Brave Search service status
+ */
+export interface BraveSearchStatus {
+  available: boolean;
+  error?: string;
+}
