@@ -9,6 +9,14 @@ export type SourceType =
 
 export type ItemStatus = 'backlog' | 'in-progress' | 'completed';
 
+// Series detection result for article navigation
+export interface SeriesInfo {
+  isPart: boolean;
+  prevUrl?: string;
+  nextUrl?: string;
+  breadcrumbs?: string[];
+}
+
 export interface InterestItem {
   id: string;
   url: string;
@@ -39,6 +47,15 @@ export interface InterestItem {
   // Article specific
   siteName?: string;
   publishedDate?: string;
+  articleContent?: string;      // Stored separately in data/articles/{id}.txt
+  hasArticleContent?: boolean;  // Flag for lazy loading
+  articleError?: string;        // Extraction failure reason
+  excerpt?: string;             // First ~200 chars for preview
+  wordCount?: number;           // Total word count
+  readingTime?: number;         // Estimated minutes (words / 200)
+  isDocumentation?: boolean;    // Documentation site flag
+  truncated?: boolean;          // Content was truncated
+  seriesInfo?: SeriesInfo;      // Series detection result
 
   // GitHub specific
   stars?: number;
@@ -65,6 +82,16 @@ export interface EnrichedCreateInput extends CreateInterestInput {
   author?: string;
   channelName?: string;
   categories?: string[];
+  // Article specific enrichment
+  articleContent?: string;
+  excerpt?: string;
+  wordCount?: number;
+  readingTime?: number;
+  siteName?: string;
+  publishedDate?: string;
+  isDocumentation?: boolean;
+  seriesInfo?: SeriesInfo;
+  truncated?: boolean;
 }
 
 export interface UpdateInterestInput {

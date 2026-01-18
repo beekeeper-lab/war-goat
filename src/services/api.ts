@@ -10,6 +10,7 @@ import type {
   SearchResponse,
   RelatedSearchResponse,
   BraveSearchStatus,
+  ArticleSummary,
 } from '../types';
 import { categorizeItem } from './categorize';
 
@@ -29,8 +30,8 @@ export async function fetchInterest(id: string): Promise<InterestItem> {
 
 export async function createInterest(input: EnrichedCreateInput): Promise<InterestItem> {
   const now = new Date().toISOString();
-  // Extract transcript to save separately
-  const { transcript, ...restInput } = input;
+  // Extract transcript and article content to save separately
+  const { transcript, articleContent, ...restInput } = input;
 
   // Auto-categorize the item based on its content
   const categories = input.categories || categorizeItem({
@@ -52,12 +53,22 @@ export async function createInterest(input: EnrichedCreateInput): Promise<Intere
     notes: restInput.notes || '',
     createdAt: now,
     updatedAt: now,
-    // Enriched fields (no transcript - stored separately)
+    // Enriched fields (no transcript/content - stored separately)
     thumbnail: restInput.thumbnail,
     author: restInput.author,
     channelName: restInput.channelName || restInput.author,
-    // Flag indicating transcript exists
+    // YouTube flags
     hasTranscript: !!transcript,
+    // Article flags
+    hasArticleContent: !!articleContent,
+    excerpt: restInput.excerpt,
+    wordCount: restInput.wordCount,
+    readingTime: restInput.readingTime,
+    siteName: restInput.siteName,
+    publishedDate: restInput.publishedDate,
+    isDocumentation: restInput.isDocumentation,
+    seriesInfo: restInput.seriesInfo,
+    truncated: restInput.truncated,
   };
 
   const response = await fetch(`${API_BASE}/interests`, {
@@ -72,6 +83,11 @@ export async function createInterest(input: EnrichedCreateInput): Promise<Intere
   // Save transcript to separate file if provided
   if (transcript && createdItem.id) {
     await saveTranscript(createdItem.id, transcript);
+  }
+
+  // Save article content to separate file if provided
+  if (articleContent && createdItem.id) {
+    await saveArticleContent(createdItem.id, articleContent);
   }
 
   return createdItem;
@@ -119,6 +135,51 @@ export async function saveTranscript(id: string, transcript: string): Promise<vo
   });
 
   if (!response.ok) throw new Error('Failed to save transcript');
+}
+
+// ============================================================================
+// Article Content API Functions
+// ============================================================================
+
+/**
+ * Fetch article content for an item
+ */
+export async function fetchArticleContent(id: string): Promise<string | null> {
+  const response = await fetch(`${API_BASE}/articles/${id}`);
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error('Failed to fetch article content');
+  const data = await response.json();
+  return data.content;
+}
+
+/**
+ * Save article content for an item
+ */
+export async function saveArticleContent(id: string, content: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/articles/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  });
+
+  if (!response.ok) throw new Error('Failed to save article content');
+}
+
+/**
+ * Generate AI summary for an article
+ */
+export async function generateArticleSummary(id: string): Promise<ArticleSummary | null> {
+  const response = await fetch(`${API_BASE}/articles/${id}/summary`, {
+    method: 'POST',
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Summary generation failed' }));
+    throw new Error(error.error || 'Summary generation failed');
+  }
+
+  const data = await response.json();
+  return data.summary;
 }
 
 // ============================================================================
