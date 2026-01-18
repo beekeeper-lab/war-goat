@@ -116,6 +116,13 @@ CLAUDE_EXIT=$?
 echo ""
 log "Claude session ended with exit code: ${CLAUDE_EXIT}"
 
+# Track AI usage for this stage
+log "Tracking AI usage..."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+python3 "${SCRIPT_DIR}/track-usage.py" "$WORKFLOW_ID" "$STAGE" "$WORKTREE_PATH" || {
+    warn "Usage tracking failed (non-critical)"
+}
+
 # Check if stage output was created
 OUTPUT_FILE="workflow/${WORKFLOW_ID}/${STAGE_OUTPUT[$STAGE]}"
 if [ ! -f "$OUTPUT_FILE" ]; then
