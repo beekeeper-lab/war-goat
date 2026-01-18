@@ -1,326 +1,842 @@
-# Multi-Agent Workflow
+# Multi-Agent Workflow System
 
-This document describes the multi-agent workflow system for War Goat. The system uses specialized Claude Code agents working in sequence, each with a distinct role, validation checkpoints, and handoff documents.
+This document provides a comprehensive guide to the multi-agent workflow system for developing features, fixing bugs, and completing tasks with AI assistance.
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Getting Started](#getting-started)
+3. [Starting Claude](#starting-claude)
+4. [Issue Tracking with Beans](#issue-tracking-with-beans)
+5. [Git Worktrees](#git-worktrees)
+6. [Workflow Stages](#workflow-stages)
+7. [Persistent Artifacts](#persistent-artifacts)
+8. [Safety Hooks](#safety-hooks)
+9. [Usage Tracking](#usage-tracking)
+10. [Parallel Workflows](#parallel-workflows)
+11. [Troubleshooting](#troubleshooting)
+
+---
 
 ## Overview
+
+The multi-agent workflow system splits development work across four specialized AI agents, each focused on a specific aspect of the development process:
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │  REQUIREMENTS   │ ──▶ │  ARCHITECTURE   │ ──▶ │ IMPLEMENTATION  │ ──▶ │       QA        │
-│    Agent        │     │    Agent        │     │    Agent        │     │    Agent        │
+│     Agent       │     │     Agent       │     │     Agent       │     │     Agent       │
 └─────────────────┘     └─────────────────┘     └─────────────────┘     └─────────────────┘
-        │                       │                       │                       │
-        ▼                       ▼                       ▼                       ▼
-  1-requirements.md       2-architecture.md      3-implementation.md      4-qa-report.md
+       │                       │                       │                       │
+       ▼                       ▼                       ▼                       ▼
+  Requirements Doc       Technical Spec         Working Code           QA Report
+  (User Stories + AC)    (For Implementor)      (Tests + Code)         (Verification)
 ```
 
-Each agent:
-- Has a specific role and skill (`/workflow-*`)
-- Outputs a handoff document with YAML frontmatter
-- Must pass validation checkpoints before handoff
-- Owns its own retry loop (up to 3 attempts)
-- Runs in an isolated git worktree
+### Key Benefits
 
-## Quick Start
+| Benefit | Description |
+|---------|-------------|
+| **Parallel Work** | Run multiple workflows simultaneously in isolated git worktrees |
+| **Specialization** | Each agent focuses on one aspect of development |
+| **Quality Gates** | Each stage produces documented deliverables before proceeding |
+| **Traceability** | Clear documentation traces requirements → design → code → verification |
+| **Isolation** | Git worktrees prevent conflicts between parallel workflows |
+| **Safety** | Hooks protect against dangerous operations |
+| **Visibility** | Track AI token usage per stage and workflow |
 
-### 1. Create a Workflow
+---
+
+## Getting Started
+
+### Prerequisites
+
+1. **Claude Code CLI** - Install from https://claude.ai/claude-code
+2. **tmux** - Terminal multiplexer for parallel agent panes
+3. **Beans** - Issue tracking CLI (optional but recommended)
+4. **gh** - GitHub CLI for PR creation
 
 ```bash
-# Create a new workflow for work item F001
-./scripts/workflow.sh create F001 feature "Obsidian Integration"
+# Install tmux
+sudo pacman -S tmux    # Arch
+sudo apt install tmux  # Debian/Ubuntu
+brew install tmux      # macOS
+
+# Install Beans (issue tracker)
+cargo install beans-cli
+
+# Install GitHub CLI
+sudo pacman -S github-cli  # Arch
+sudo apt install gh        # Debian/Ubuntu
+brew install gh            # macOS
 ```
 
-### 2. Set Up Worktree
+### Quick Start (5 minutes)
 
 ```bash
-# Create isolated git worktree for this workflow
-./scripts/workflow.sh worktree F001
+# 1. Start Claude in tmux
+./tmux_claude.sh
 
-# Navigate to worktree
-cd ../war-goat-f001
+# 2. In Claude, start a workflow from a Beans issue
+/start-workflow F004
+
+# 3. Watch the agent panel (right side) - it auto-chains through all 4 stages
+#    Switch panes: Ctrl+b then arrow keys
+
+# 4. When complete, a PR is automatically created
 ```
 
-### 3. Run Each Stage
+---
 
-In the worktree, start a Claude Code session and run each stage:
+## Starting Claude
+
+### Recommended: Use the Launcher Script
+
+The `tmux_claude.sh` script is the recommended way to start Claude for workflow development:
+
+```bash
+./tmux_claude.sh
+```
+
+This script:
+1. Starts a tmux session named "workflow"
+2. Launches Claude inside the session
+3. Auto-runs `/prime` to orient Claude with the codebase
+4. Enables `/start-workflow` to spawn agent panes
+
+### Manual Start
+
+If you prefer to start manually:
+
+```bash
+# Start tmux session
+tmux new -s workflow
+
+# Start Claude
+claude
+
+# Orient with the codebase
+/prime
+```
+
+### Without tmux
+
+The workflow system works without tmux, but agents will run sequentially in your terminal instead of in parallel panes:
 
 ```bash
 claude
-# Then: /workflow-requirements F001
-# Then: /workflow-architecture F001
-# Then: /workflow-implement F001
-# Then: /workflow-qa F001
+/start-workflow F004
+# Agent runs in current terminal, auto-chains through all stages
 ```
 
-### 4. Check Status
+---
+
+## Issue Tracking with Beans
+
+[Beans](https://github.com/beekeeper-lab/beans) is the recommended issue tracker for managing work items. It integrates with the workflow system.
+
+### Setting Up Beans
 
 ```bash
-./scripts/workflow.sh status F001
-./scripts/workflow.sh list
+# Initialize Beans in your project
+beans init
+
+# Configure GitHub integration (optional)
+beans config github.repo "owner/repo"
 ```
 
-### 5. Clean Up
+### Creating Work Items
+
+Use a naming convention for work item IDs:
+- `F###` - Features (e.g., F001, F002)
+- `B###` - Bugs (e.g., B001, B002)
+- `C###` - Chores/Tasks (e.g., C001, C002)
 
 ```bash
-./scripts/workflow.sh clean F001
+# Create a feature
+beans new --title "F004: Article/Web Page Enrichment" --type feature
+
+# Create a bug
+beans new --title "B001: Transcript fetch timeout" --type bug
+
+# Create a chore
+beans new --title "C001: Upgrade React to v19" --type chore
 ```
 
-## Architecture Decisions
+### Managing Work Items
 
-The workflow design is documented in these ADRs:
+```bash
+# List all work items
+beans list
 
-| ADR | Decision |
-|-----|----------|
-| [ADR-001](decisions/ADR-001-git-worktrees.md) | Use git worktrees for agent isolation |
-| [ADR-002](decisions/ADR-002-full-agents.md) | Use full Claude Code sessions (not sub-agents) |
-| [ADR-003](decisions/ADR-003-beans-integration.md) | Beans for issue tracking, custom workflow for orchestration |
-| [ADR-004](decisions/ADR-004-handoff-format.md) | Markdown with YAML frontmatter, agent-owned retries |
+# Show details
+beans show <bean-id>
 
-## Stages
+# Update status
+beans update <bean-id> -s in-progress
+beans update <bean-id> -s completed
 
-### Stage 1: Requirements Agent
+# Add notes
+beans update <bean-id> --note "Blocked on API access"
+```
 
-**Skill**: `/workflow-requirements`
+### Workflow Integration
 
-**Purpose**: Analyze the request, research the codebase, identify requirements and system impact.
+The workflow stages automatically update Beans:
+- **Start**: Requirements agent marks issue as `in-progress`
+- **Complete**: QA agent marks issue as `completed` (if approved)
 
-**Checkpoints**:
-| Checkpoint | Criteria |
-|------------|----------|
-| `requirements_identified` | At least 3 functional requirements defined |
-| `impact_analyzed` | Components affected with impact levels |
-| `acceptance_criteria_defined` | Specific, measurable, testable criteria |
-| `no_open_blockers` | No unanswered blocking questions |
-
-**Output**: `workflow/{ID}/1-requirements.md`
-
-### Stage 2: Architecture Agent
-
-**Skill**: `/workflow-architecture`
-
-**Purpose**: Design the technical solution, define implementation tasks, plan tests.
-
-**Checkpoints**:
-| Checkpoint | Criteria |
-|------------|----------|
-| `requirements_addressed` | All requirements have design coverage |
-| `design_complete` | Architecture decisions documented |
-| `tasks_defined` | Implementation tasks are specific and ordered |
-| `tests_planned` | Test strategy defined for each requirement |
-
-**Output**: `workflow/{ID}/2-architecture.md`
-
-### Stage 3: Implementation Agent
-
-**Skill**: `/workflow-implement`
-
-**Purpose**: Write tests first (TDD), then implement the solution.
-
-**Checkpoints**:
-| Checkpoint | Criteria |
-|------------|----------|
-| `tests_written` | Tests exist for all acceptance criteria |
-| `code_complete` | All tasks from architecture are implemented |
-| `tests_passing` | All tests pass |
-| `no_lint_errors` | Code passes linting/formatting checks |
-
-**Output**: `workflow/{ID}/3-implementation.md`
-
-### Stage 4: QA Agent
-
-**Skill**: `/workflow-qa`
-
-**Purpose**: Verify acceptance criteria, run comprehensive tests, file bugs.
-
-**Checkpoints**:
-| Checkpoint | Criteria |
-|------------|----------|
-| `criteria_verified` | All acceptance criteria tested and passing |
-| `tests_passing` | All test suites pass |
-| `no_critical_bugs` | No critical bugs remain unfixed |
-| `docs_updated` | Documentation reflects changes |
-
-**Output**: `workflow/{ID}/4-qa-report.md`
-
-## Handoff Documents
-
-Each stage produces a markdown document with YAML frontmatter:
-
-```yaml
 ---
-id: F001
-stage: requirements
-title: "Obsidian Integration"
-started_at: 2026-01-16T10:00:00Z
-completed_at: 2026-01-16T10:45:00Z
-status: complete
-handoff_ready: true
-checkpoints:
-  - name: requirements_identified
-    status: pass
-    message: ""
-  - name: impact_analyzed
-    status: pass
-    message: ""
-retry_count: 0
-last_failure: null
----
-
-# Requirements: Obsidian Integration
-
-...markdown content...
-```
-
-### Statuses
-
-- `in_progress` - Agent is working
-- `complete` - Checkpoints passed, ready for handoff
-- `failed` - Validation failed, retrying
-- `blocked` - Needs human intervention
-
-## Validation & Retries
-
-Each agent owns its validation:
-
-```
-Work → Validate → Pass? → Handoff
-                    ↓
-                   Fail
-                    ↓
-            Retry < 3? ─── Yes → Fix & Retry
-                    ↓
-                   No
-                    ↓
-             Escalate to Human
-```
-
-When blocked, the document contains:
-
-```yaml
----
-status: blocked
-block_reason: needs_human_input
-block_details: "Cannot determine OAuth vs API key preference"
-retry_count: 3
----
-```
-
-## Directory Structure
-
-```
-workflow/
-├── .templates/
-│   └── status.json          # Template for workflow state
-├── F001/
-│   ├── status.json          # Current workflow state
-│   ├── 1-requirements.md    # Stage 1 output
-│   ├── 2-architecture.md    # Stage 2 output
-│   ├── 3-implementation.md  # Stage 3 output
-│   └── 4-qa-report.md       # Stage 4 output
-└── _archive/                # Completed workflows
-```
 
 ## Git Worktrees
 
-Each workflow runs in an isolated git worktree to prevent conflicts:
+Git worktrees allow multiple checkouts of the same repository, enabling parallel development without conflicts.
+
+### How Worktrees Work
 
 ```
-project/
-├── war-goat/                # Main worktree (main branch)
-├── war-goat-f001/           # F001 worktree (feature/F001 branch)
-├── war-goat-b001/           # B001 worktree (bug/B001 branch)
+main repo (.git)
+├── main branch (original checkout)
+├── ../project-f001/ (worktree → feature/F001 branch)
+├── ../project-f002/ (worktree → feature/F002 branch)
+└── ../project-b001/ (worktree → fix/B001 branch)
+```
+
+### Benefits
+
+- **Isolation**: Each workflow has its own working directory
+- **Parallel Development**: Run multiple workflows simultaneously
+- **Shared History**: All worktrees share the same `.git` directory
+- **Lightweight**: No need to clone the entire repo
+
+### Automatic Worktree Creation
+
+When you run `/start-workflow`, the system automatically:
+
+1. Creates a branch based on work item type:
+   - Features → `feature/F001`
+   - Bugs → `fix/B001`
+   - Chores → `chore/C001`
+
+2. Creates a worktree at `../project-name-<id>/`
+
+3. Copies workflow files to the worktree
+
+### Manual Worktree Commands
+
+```bash
+# List worktrees
+git worktree list
+
+# Create worktree manually
+git worktree add ../project-f001 -b feature/F001
+
+# Remove worktree
+git worktree remove ../project-f001
+
+# Prune stale worktrees
+git worktree prune
+```
+
+### Worktree Lifecycle
+
+```
+1. /start-workflow F001
+   └─▶ Creates ../project-f001/ with feature/F001 branch
+
+2. Agent works in worktree
+   └─▶ Commits and pushes to feature/F001
+
+3. QA completes, PR created
+   └─▶ PR: feature/F001 → main
+
+4. After merge, cleanup:
+   git worktree remove ../project-f001
+   git branch -d feature/F001
+```
+
+---
+
+## Workflow Stages
+
+### Stage 1: Requirements Agent
+
+**Command**: `/workflow-requirements <ID>`
+
+**Purpose**: Understand the request, analyze impact, document requirements
+
+**Inputs**:
+- Work item ID and description (from Beans)
+- Existing requirements (if updating)
+
+**Outputs**:
+- `docs/requirements/{ID}-requirements.md` (persistent)
+- `workflow/{ID}/1-requirements.md` (tracking)
+
+**Deliverables**:
+- User stories with acceptance criteria
+- Functional requirements (FR-1, FR-2, ...)
+- Non-functional requirements
+- System impact analysis
+- Open questions for Architecture
+
+### Stage 2: Architecture Agent
+
+**Command**: `/workflow-architecture <ID>`
+
+**Purpose**: Design the solution, make technical decisions, create implementation plan
+
+**Inputs**:
+- Requirements from Stage 1
+- Existing codebase patterns
+
+**Outputs**:
+- `specs/{ID}-spec.md` (persistent - THE source for Implementor)
+- `workflow/{ID}/2-architecture.md` (tracking)
+
+**Deliverables**:
+- Architecture Decision Records (ADRs)
+- Technical design (data models, APIs, components)
+- File change list with line numbers
+- Step-by-step tasks for Implementor
+- Test strategy (TDD approach)
+
+### Stage 3: Implementation Agent
+
+**Command**: `/workflow-implement <ID>`
+
+**Purpose**: Implement the solution following TDD principles
+
+**Inputs**:
+- `specs/{ID}-spec.md` (PRIMARY input)
+- Architecture document from Stage 2
+
+**Outputs**:
+- `workflow/{ID}/3-implementation.md` (tracking)
+- Actual code changes
+- Tests (unit, component, E2E)
+- Git commits
+
+**Approach**:
+1. **RED**: Write failing tests first
+2. **GREEN**: Implement code to pass tests
+3. **REFACTOR**: Clean up while keeping tests green
+
+### Stage 4: QA Agent
+
+**Command**: `/workflow-qa <ID>`
+
+**Purpose**: Verify implementation, fill test gaps, approve or reject
+
+**Inputs**:
+- `docs/requirements/{ID}-requirements.md` (What was requested)
+- `specs/{ID}-spec.md` (What was designed)
+- `workflow/{ID}/3-implementation.md` (What was built)
+- Actual code and tests
+
+**Outputs**:
+- `workflow/{ID}/4-qa-report.md` (tracking)
+- Additional tests (gap filling)
+- Bug reports (if issues found)
+- Documentation updates
+
+**Verification**:
+- All acceptance criteria met
+- All tests pass
+- No critical bugs
+- Documentation updated
+
+**Verdict**: `APPROVED` or `REJECTED`
+
+---
+
+## Persistent Artifacts
+
+The workflow produces two types of artifacts:
+
+### 1. Persistent Documents (Live Forever)
+
+These documents are maintained across workflows and represent the current state of requirements and designs:
+
+```
+docs/requirements/
+├── F001-requirements.md   # User stories + AC for F001
+├── F002-requirements.md   # User stories + AC for F002
+└── ...
+
+specs/
+├── F001-spec.md           # Technical spec for F001
+├── F002-spec.md           # Technical spec for F002
 └── ...
 ```
 
-Benefits:
-- Parallel work without branch switching
-- Clean isolation between features
-- Each agent has its own workspace
-- Easy cleanup when done
+### 2. Workflow Documents (Per-Workflow Tracking)
 
-## CLI Reference
+These documents track the progress of a specific workflow execution:
 
-```bash
-# Create new workflow
-./scripts/workflow.sh create <ID> <type> <title>
-# Example: ./scripts/workflow.sh create F001 feature "Obsidian Integration"
-
-# List active workflows
-./scripts/workflow.sh list
-
-# Show workflow status
-./scripts/workflow.sh status <ID>
-
-# Show next stage to run
-./scripts/workflow.sh next <ID>
-
-# Create/show git worktree
-./scripts/workflow.sh worktree <ID>
-
-# Archive completed workflow
-./scripts/workflow.sh clean <ID>
+```
+workflow/
+├── F001/
+│   ├── status.json           # Workflow state
+│   ├── usage.json            # AI token usage
+│   ├── 1-requirements.md     # Requirements stage output
+│   ├── 2-architecture.md     # Architecture stage output
+│   ├── 3-implementation.md   # Implementation stage output
+│   └── 4-qa-report.md        # QA stage output
+└── _archive/                 # Completed workflows
 ```
 
-## Beans Integration (Optional)
+### Document Flow
 
-For issue tracking, you can use [Beans](https://github.com/hmans/beans):
-
-```bash
-# Install
-npm install -g @hmans/beans
-beans init
-
-# Create issue, then workflow
-beans new --type feature --title "Obsidian Integration"
-./scripts/workflow.sh create F001 feature "Obsidian Integration"
-
-# QA files bugs
-beans new --type bug --title "Export fails on large files"
-
-# Archive when complete
-beans archive F001
-./scripts/workflow.sh clean F001
+```
+User Request
+     │
+     ▼
+┌─────────────────────────────────────────────┐
+│  Requirements Agent                          │
+│  ───────────────                             │
+│  Creates/Updates:                            │
+│    • docs/requirements/{ID}-requirements.md  │
+│    • workflow/{ID}/1-requirements.md         │
+└─────────────────────────────────────────────┘
+     │
+     ▼
+┌─────────────────────────────────────────────┐
+│  Architecture Agent                          │
+│  ──────────────────                          │
+│  Reads: docs/requirements/{ID}-requirements.md│
+│  Creates:                                    │
+│    • specs/{ID}-spec.md (PRIMARY for impl)   │
+│    • workflow/{ID}/2-architecture.md         │
+└─────────────────────────────────────────────┘
+     │
+     ▼
+┌─────────────────────────────────────────────┐
+│  Implementation Agent                        │
+│  ────────────────────                        │
+│  Reads: specs/{ID}-spec.md (PRIMARY)         │
+│  Creates:                                    │
+│    • Code + Tests                            │
+│    • workflow/{ID}/3-implementation.md       │
+└─────────────────────────────────────────────┘
+     │
+     ▼
+┌─────────────────────────────────────────────┐
+│  QA Agent                                    │
+│  ────────                                    │
+│  Reads:                                      │
+│    • docs/requirements/{ID}-requirements.md  │
+│    • specs/{ID}-spec.md                      │
+│    • workflow/{ID}/3-implementation.md       │
+│  Creates:                                    │
+│    • workflow/{ID}/4-qa-report.md            │
+│  Updates: Beans issue status                 │
+└─────────────────────────────────────────────┘
 ```
 
-See [ADR-003](decisions/ADR-003-beans-integration.md) for integration details.
+---
 
-## Example Workflow
+## Safety Hooks
+
+The workflow system includes safety hooks to protect against dangerous operations. These are defined in `.claude/hooks/`.
+
+### Bash Safety Hook
+
+**File**: `.claude/hooks/bash_safety.py`
+
+Blocks dangerous bash commands:
+
+| Protection | Pattern | Message |
+|------------|---------|---------|
+| Delete root | `rm -rf /` | Cannot delete root filesystem |
+| Delete home | `rm -rf ~` | Cannot delete home directory |
+| Delete cwd | `rm -rf .` | Cannot recursively delete current directory |
+| Push to main | `git push origin main` | Cannot push directly to main. Use a PR instead |
+| Force push | `git push --force` | Force push is disabled for safety |
+| Merge to main | `git merge ... main` | Cannot merge to main directly |
+| Pipe to shell | `curl ... \| bash` | Cannot pipe curl to shell (security risk) |
+
+**Soft Blocks** (require confirmation):
+- `rm` commands that aren't obviously safe (not deleting node_modules, dist, etc.)
+
+### Write Safety Hook
+
+**File**: `.claude/hooks/write_safety.py`
+
+Blocks writes to sensitive files:
+
+| Protection | Files | Message |
+|------------|-------|---------|
+| SSH | `~/.ssh/*` | Cannot write to SSH directory |
+| System config | `/etc/*` | Cannot write to system config directory |
+| Root home | `/root/*` | Cannot write to root home directory |
+| AWS | `~/.aws/credentials`, `~/.aws/config` | Cannot write to AWS credentials |
+| GPG | `~/.gnupg/*` | Cannot write to GPG directory |
+| Git config | `~/.gitconfig` | Cannot write to global git config |
+| Environment | `.env`, `.env.*` | Cannot write to environment file |
+| Keys | `*.pem`, `*.key`, `*.p12`, `*.pfx` | Cannot write to key/certificate file |
+| Credentials | `credentials.json`, `secrets.json`, etc. | Cannot write to credentials file |
+
+### Enabling Hooks
+
+Hooks are configured in `.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/bash_safety.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/write_safety.py\""
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Creating Custom Hooks
+
+Hooks receive JSON via stdin with the tool invocation:
+
+```json
+{
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "rm -rf /important/files"
+  }
+}
+```
+
+Exit codes:
+- `0` - Allow the operation
+- `2` - Block the operation (message to stderr shown to user)
+
+---
+
+## Usage Tracking
+
+The workflow system tracks AI token usage for each stage, enabling cost analysis and pattern detection.
+
+### How It Works
+
+After each workflow stage completes, `scripts/track-usage.py` extracts usage data from Claude's session transcript and stores it in two locations:
+
+1. **Centralized Log**: `data/ai-usage.jsonl`
+   - Append-only JSONL format
+   - One record per stage completion
+   - Easy to query with `jq`
+
+2. **Per-Workflow Summary**: `workflow/{ID}/usage.json`
+   - Breakdown by stage
+   - Running totals
+   - Stays with workflow artifacts
+
+### Data Schema
+
+```json
+{
+  "timestamp": "2026-01-17T10:30:00Z",
+  "work_item_id": "F004",
+  "stage": "implementation",
+  "input_tokens": 45000,
+  "output_tokens": 12000,
+  "cache_read_tokens": 8000,
+  "cache_write_tokens": 3000,
+  "total_tokens": 68000,
+  "tool_calls": 45,
+  "duration_ms": 180000,
+  "model": "claude-opus-4-5-20251101"
+}
+```
+
+### Querying Usage Data
+
+Use the `scripts/query-usage.sh` script:
 
 ```bash
-# 1. Create workflow
-./scripts/workflow.sh create F001 feature "Add user preferences"
+# Overall summary
+./scripts/query-usage.sh summary
 
-# 2. Set up worktree
+# Usage grouped by workflow
+./scripts/query-usage.sh by-workflow
+
+# Average usage by stage (find which stages cost most)
+./scripts/query-usage.sh by-stage
+
+# Details for specific workflow
+./scripts/query-usage.sh workflow F004
+
+# Most recent records
+./scripts/query-usage.sh recent 10
+
+# Most expensive workflows
+./scripts/query-usage.sh expensive 5
+```
+
+### Example Output
+
+```bash
+$ ./scripts/query-usage.sh by-stage
+=== Average Usage by Stage ===
+[
+  {
+    "stage": "architecture",
+    "count": 5,
+    "avg_tokens": 52000,
+    "avg_tool_calls": 35
+  },
+  {
+    "stage": "implementation",
+    "count": 5,
+    "avg_tokens": 85000,
+    "avg_tool_calls": 120
+  },
+  {
+    "stage": "qa",
+    "count": 5,
+    "avg_tokens": 45000,
+    "avg_tool_calls": 60
+  },
+  {
+    "stage": "requirements",
+    "count": 5,
+    "avg_tokens": 25000,
+    "avg_tool_calls": 20
+  }
+]
+```
+
+---
+
+## Parallel Workflows
+
+The real power of this system is running multiple workflows simultaneously.
+
+### Terminal Layout with tmux
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ Pane 0: Main (You + Claude)│ Pane 1: F001 Agent                     │
+│ ─────────────────────────────│───────────────────────────────────── │
+│ ./tmux_claude.sh              │ [Requirements Agent running...]      │
+│ /start-workflow F001          │ > Analyzing codebase                 │
+│ /start-workflow F002          │ > Writing requirements               │
+│                               │                                      │
+├─────────────────────────────────────────────────────────────────────┤
+│ Pane 2: F002 Agent            │ Pane 3: B001 Agent                   │
+│ ─────────────────────────────│───────────────────────────────────── │
+│ [Architecture Agent running...│ [Implementation Agent running...]    │
+│ > Reading requirements        │ > Writing tests (RED)                │
+│ > Designing solution          │ > Implementing code (GREEN)          │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### tmux Keybindings
+
+| Key | Action |
+|-----|--------|
+| `Ctrl+b` then `→` | Move to right pane |
+| `Ctrl+b` then `←` | Move to left pane |
+| `Ctrl+b` then `↑` | Move to upper pane |
+| `Ctrl+b` then `↓` | Move to lower pane |
+| `Ctrl+b` then `z` | Zoom current pane (toggle) |
+| `Ctrl+b` then `d` | Detach from session |
+| `Ctrl+b` then `x` | Close current pane |
+
+### Starting Multiple Workflows
+
+```bash
+# In Claude (main pane)
+/start-workflow F001
+/start-workflow F002
+/start-workflow B001
+
+# Each creates a new pane with an agent
+```
+
+### Monitoring Progress
+
+From the main pane:
+
+```bash
+# Check all work items
+beans list
+
+# Check specific workflow status
+./scripts/workflow.sh status F001
+
+# See what stage is running
+./scripts/workflow.sh next F001
+```
+
+---
+
+## Troubleshooting
+
+### "Workflow not found"
+
+```bash
+# Check workflow exists
+ls workflow/
+
+# Create if missing
+./scripts/workflow.sh create F001 feature "Title"
+```
+
+### "Previous stage not complete"
+
+```bash
+# Check status
+./scripts/workflow.sh status F001
+
+# See which stage to run
+./scripts/workflow.sh next F001
+```
+
+### "Worktree already exists"
+
+```bash
+# List worktrees
+git worktree list
+
+# Remove and recreate
+git worktree remove ../project-f001
 ./scripts/workflow.sh worktree F001
-cd ../war-goat-f001
-
-# 3. Start Claude Code
-claude
-
-# 4. Run Stage 1 (Requirements)
-# /workflow-requirements F001
-# Agent outputs: workflow/F001/1-requirements.md
-
-# 5. Run Stage 2 (Architecture)
-# /workflow-architecture F001
-# Agent outputs: workflow/F001/2-architecture.md
-
-# 6. Run Stage 3 (Implementation)
-# /workflow-implement F001
-# Agent outputs: workflow/F001/3-implementation.md
-
-# 7. Run Stage 4 (QA)
-# /workflow-qa F001
-# Agent outputs: workflow/F001/4-qa-report.md
-
-# 8. Merge and clean up
-cd ../war-goat
-git merge feature/F001
-./scripts/workflow.sh clean F001
 ```
 
-## Related Documentation
+### Agent Not Starting in Pane
 
-- [Work Items](../work-items/README.md) - Feature, bug, and chore definitions
-- [ADR Index](decisions/README.md) - All architecture decisions
-- [Planning Skills](../../.claude/commands/) - `/feature`, `/bug`, `/chore` skills
+Make sure you're running inside tmux:
+
+```bash
+# Check if in tmux
+echo $TMUX
+
+# If empty, start tmux first
+./tmux_claude.sh
+```
+
+### Hook Blocking Legitimate Operation
+
+If a safety hook blocks something you need to do:
+
+1. Review why it was blocked (the message explains)
+2. If legitimate, run the command manually outside Claude
+3. Or modify the hook pattern in `.claude/hooks/`
+
+### Merge Conflicts
+
+```bash
+# In the worktree
+cd ../project-f001
+git fetch origin
+git rebase origin/main
+
+# Resolve conflicts, then
+git rebase --continue
+
+# Re-run the stage if needed
+```
+
+### Usage Tracking Not Working
+
+```bash
+# Check if transcript exists
+ls -la ~/.claude/projects/
+
+# Run tracking manually
+python3 scripts/track-usage.py F001 requirements /path/to/project
+```
+
+---
+
+## Directory Structure Reference
+
+```
+project/
+├── .claude/
+│   ├── commands/                 # Claude slash commands
+│   │   ├── workflow-requirements.md
+│   │   ├── workflow-architecture.md
+│   │   ├── workflow-implement.md
+│   │   ├── workflow-qa.md
+│   │   ├── start-workflow.md
+│   │   └── ...
+│   ├── hooks/                    # Safety hooks
+│   │   ├── bash_safety.py
+│   │   └── write_safety.py
+│   └── settings.json             # Hook configuration
+│
+├── scripts/
+│   ├── workflow.sh               # Workflow management
+│   ├── start-workflow.sh         # Launch workflow + agent
+│   ├── agent-runner.sh           # Run stages, auto-chain
+│   ├── track-usage.py            # Extract AI usage data
+│   └── query-usage.sh            # Query usage data
+│
+├── docs/
+│   ├── requirements/             # Persistent requirements
+│   │   ├── F001-requirements.md
+│   │   └── ...
+│   └── MULTI-AGENT-WORKFLOW.md   # This document
+│
+├── specs/                        # Persistent technical specs
+│   ├── F001-spec.md
+│   └── ...
+│
+├── workflow/                     # Workflow tracking
+│   ├── F001/
+│   │   ├── status.json
+│   │   ├── usage.json
+│   │   ├── 1-requirements.md
+│   │   ├── 2-architecture.md
+│   │   ├── 3-implementation.md
+│   │   └── 4-qa-report.md
+│   └── _archive/
+│
+├── data/
+│   └── ai-usage.jsonl            # Centralized usage log
+│
+├── tmux_claude.sh                # Launcher script
+└── ...
+
+# Worktrees (outside main project)
+../project-f001/                  # feature/F001 branch
+../project-f002/                  # feature/F002 branch
+../project-b001/                  # fix/B001 branch
+```
+
+---
+
+## Summary
+
+The multi-agent workflow system provides:
+
+1. **Structured Development**: Four specialized agents handle requirements, architecture, implementation, and QA
+2. **Parallel Execution**: Git worktrees and tmux enable simultaneous workflows
+3. **Safety Guardrails**: Hooks prevent dangerous operations
+4. **Full Traceability**: Every decision documented from request to verification
+5. **Usage Insights**: Track AI token usage to optimize costs
+6. **Integration**: Works with Beans for issue tracking, GitHub for PRs
+
+Start with:
+```bash
+./tmux_claude.sh
+/start-workflow <bean-id>
+```
+
+And let the agents work!
