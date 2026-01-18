@@ -202,8 +202,32 @@ This PR was created by the multi-agent workflow system.
         warn "PR creation failed - you may need to create it manually"
     }
 
+    # Update Beans status to completed
+    log "Updating Beans status..."
+    BEAN_ID=$(beans list 2>/dev/null | grep -i "$WORKFLOW_ID" | awk '{print $1}' | head -1)
+    if [ -n "$BEAN_ID" ]; then
+        beans update "$BEAN_ID" -s completed 2>/dev/null && success "Beans updated to completed" || warn "Beans update failed"
+    fi
+
     echo ""
-    success "Workflow ${WORKFLOW_ID} finished! PR created (or ready to create)."
+    success "Workflow ${WORKFLOW_ID} finished! PR created."
+    echo ""
+
+    # Cleanup worktree
+    log "Cleaning up worktree..."
+    MAIN_REPO=$(cd "$WORKTREE_PATH" && git worktree list | grep '\[main\]' | awk '{print $1}')
+    if [ -n "$MAIN_REPO" ] && [ "$WORKTREE_PATH" != "$MAIN_REPO" ]; then
+        cd "$MAIN_REPO"
+        git worktree remove --force "$WORKTREE_PATH" 2>/dev/null && {
+            success "Worktree cleaned up: $WORKTREE_PATH"
+        } || {
+            warn "Could not auto-remove worktree. Run manually:"
+            warn "  git worktree remove --force $WORKTREE_PATH"
+        }
+    fi
+
+    echo ""
+    success "✨ Workflow complete and cleaned up!"
     echo ""
     echo "Press Enter to close this pane..."
     read
