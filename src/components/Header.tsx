@@ -1,10 +1,12 @@
-import { Plus, RefreshCw, Search } from 'lucide-react';
+import { Plus, RefreshCw, Search, Settings, Target } from 'lucide-react';
 import { ObsidianStatus } from './ObsidianStatus';
 
 interface HeaderProps {
   onAddClick: () => void;
   onSearchClick?: () => void;
   onSyncClick?: () => void;
+  onSettingsClick?: () => void;
+  onGoalsClick?: () => void;
   syncing?: boolean;
   obsidianConnected?: boolean;
   searchAvailable?: boolean;
@@ -14,6 +16,8 @@ export function Header({
   onAddClick,
   onSearchClick,
   onSyncClick,
+  onSettingsClick,
+  onGoalsClick,
   syncing,
   obsidianConnected,
   searchAvailable = false,
@@ -45,6 +49,24 @@ export function Header({
               <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs bg-olive-800 rounded border border-olive-600">
                 ⌘K
               </kbd>
+            </button>
+          )}
+          {onGoalsClick && (
+            <button
+              onClick={onGoalsClick}
+              className="p-2 text-olive-300 hover:text-white hover:bg-olive-700 rounded-lg transition-colors"
+              title="Learning Goals"
+            >
+              <Target className="w-5 h-5" />
+            </button>
+          )}
+          {onSettingsClick && (
+            <button
+              onClick={onSettingsClick}
+              className="p-2 text-olive-300 hover:text-white hover:bg-olive-700 rounded-lg transition-colors"
+              title="Settings"
+            >
+              <Settings className="w-5 h-5" />
             </button>
           )}
           {onSyncClick && obsidianConnected && (

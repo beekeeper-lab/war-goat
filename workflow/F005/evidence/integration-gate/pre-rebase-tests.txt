@@ -1,0 +1,91 @@
+
+ RUN  v2.1.9 /home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > caching > returns cached result for identical queries
+[Brave Search] Performing web search: test query
+[Brave Search] Cache hit for web search: test query
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > caching > different query types have separate cache entries
+[Brave Search] Performing web search: test query
+[Brave Search] Performing news search: test query
+[Brave Search] Performing video search: test query
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > caching > different freshness values have separate cache entries
+[Brave Search] Performing web search: test query
+[Brave Search] Performing web search: test query
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > caching > cache can be cleared
+[Brave Search] Performing web search: test query
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > webSearch > calls brave_web_search with correct params
+[Brave Search] Performing web search: react hooks
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > webSearch > parses web results correctly
+[Brave Search] Performing web search: react hooks
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > webSearch > handles API errors gracefully
+[Brave Search] Performing web search: test
+
+stderr | server/__tests__/brave-search.test.js > brave-search service > webSearch > handles API errors gracefully
+[Brave Search] Web search failed: API Error
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > newsSearch > parses news results correctly
+[Brave Search] Performing news search: latest tech
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > videoSearch > parses video results correctly
+[Brave Search] Performing video search: coding tutorial
+
+ ✓ server/__tests__/brave-search.test.js (18 tests) 20ms
+stderr | src/services/__tests__/storage.test.ts > storage > loadPreferences > handles corrupted data gracefully
+Failed to load preferences: SyntaxError: Unexpected token 'o', "not valid json{{{" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at Module.loadPreferences (/home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005/src/services/storage.ts:38:27)
+    at /home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005/src/services/__tests__/storage.test.ts:89:21
+    at file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005/node_modules/@vitest/runner/dist/index.js:146:14
+    at file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005/node_modules/@vitest/runner/dist/index.js:533:11
+    at runWithTimeout (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005/node_modules/@vitest/runner/dist/index.js:39:7)
+    at runTest (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005/node_modules/@vitest/runner/dist/index.js:1056:17)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runSuite (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005/node_modules/@vitest/runner/dist/index.js:1205:15)
+
+stderr | src/services/__tests__/storage.test.ts > storage > loadPatterns > handles corrupted data gracefully
+Failed to load patterns: SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)
+    at JSON.parse (<anonymous>)
+    at Module.loadPatterns (/home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005/src/services/storage.ts:89:27)
+    at /home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005/src/services/__tests__/storage.test.ts:160:24
+    at file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005/node_modules/@vitest/runner/dist/index.js:146:14
+    at file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005/node_modules/@vitest/runner/dist/index.js:533:11
+    at runWithTimeout (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005/node_modules/@vitest/runner/dist/index.js:39:7)
+    at runTest (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005/node_modules/@vitest/runner/dist/index.js:1056:17)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runSuite (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-f005/node_modules/@vitest/runner/dist/index.js:1205:15)
+
+ ✓ src/services/__tests__/storage.test.ts (26 tests) 49ms
+ ✓ src/hooks/__tests__/useUserPreferences.test.tsx (5 tests) 20ms
+ ✓ src/hooks/__tests__/useSmartSuggestions.test.tsx (9 tests) 25ms
+ ✓ src/hooks/__tests__/usePatterns.test.tsx (7 tests) 40ms
+stdout | server/__tests__/article.test.js > Article Service > enrichArticleUrl > returns properly shaped result object
+[Article] Enriching: https://example.com/sample-article
+
+stdout | server/__tests__/article.test.js > Article Service > enrichArticleUrl > handles fetch errors gracefully
+[Article] Enriching: https://example.com/article
+
+stderr | server/__tests__/article.test.js > Article Service > enrichArticleUrl > handles fetch errors gracefully
+[Article] Enrichment failed: Network error
+
+stdout | server/__tests__/article.test.js > Article Service > enrichArticleUrl > handles extraction failures gracefully
+[Article] Enriching: https://example.com/empty
+
+stdout | server/__tests__/article.test.js > Article Service > enrichArticleUrl > enrichment completes within reasonable time
+[Article] Enriching: https://example.com/article
+
+ ✓ server/__tests__/article.test.js (29 tests) 333ms
+ ✓ src/hooks/__tests__/useLearningGoals.test.tsx (8 tests) 461ms
+
+ Test Files  7 passed (7)
+      Tests  102 passed (102)
+   Start at  14:50:02
+   Duration  1.51s (transform 250ms, setup 0ms, collect 1.26s, tests 948ms, environment 2.29s, prepare 1.88s)
+

@@ -206,6 +206,21 @@ export interface StudyNotes {
 }
 
 // ============================================================================
+// Article Summary Types
+// ============================================================================
+
+/**
+ * AI-generated article summary
+ */
+export interface ArticleSummary {
+  summary: string;
+  keyPoints: string[];
+  mainTheme: string;
+  suggestedTags: string[];
+  actionItems: string[];
+}
+
+// ============================================================================
 // Brave Search Integration Types
 // ============================================================================
 
@@ -262,4 +277,196 @@ export interface RelatedSearchResponse extends SearchResponse {
 export interface BraveSearchStatus {
   available: boolean;
   error?: string;
+}
+
+// ============================================================================
+// User Preferences Types (F005)
+// ============================================================================
+
+/**
+ * Theme setting for the application
+ */
+export type ThemeSetting = 'light' | 'dark' | 'system';
+
+/**
+ * View mode for the interest list
+ */
+export type ViewMode = 'grid' | 'list';
+
+/**
+ * Sort order for the interest list
+ */
+export type SortOrder = 'date' | 'title' | 'status';
+
+/**
+ * Privacy settings for user data collection
+ */
+export interface PrivacySettings {
+  trackPatterns: boolean;
+  consentGiven: boolean;
+  consentDate?: string;
+}
+
+/**
+ * Default filter state to apply on app load
+ */
+export interface DefaultFilters {
+  type: SourceType | 'all';
+  status: ItemStatus | 'all';
+  category: string | 'all';
+}
+
+/**
+ * User preferences - stored in localStorage
+ * Schema version enables future migrations
+ */
+export interface UserPreferences {
+  version: number;
+  theme: ThemeSetting;
+  defaultView: ViewMode;
+  defaultSort: SortOrder;
+  defaultFilters: DefaultFilters;
+  autoEnrich: boolean;
+  obsidian: ObsidianSettings;
+  privacy: PrivacySettings;
+}
+
+/**
+ * Default preferences for new users
+ */
+export const DEFAULT_USER_PREFERENCES: UserPreferences = {
+  version: 1,
+  theme: 'system',
+  defaultView: 'grid',
+  defaultSort: 'date',
+  defaultFilters: {
+    type: 'all',
+    status: 'all',
+    category: 'all',
+  },
+  autoEnrich: true,
+  obsidian: {
+    enabled: true,
+    defaultFolder: 'War Goat',
+    includeTranscript: true,
+    generateStudyNotes: false,
+    autoSyncOnCreate: false,
+  },
+  privacy: {
+    trackPatterns: false,
+    consentGiven: false,
+  },
+};
+
+// ============================================================================
+// Learning Goals Types
+// ============================================================================
+
+/**
+ * Timeframe for a learning goal
+ */
+export type GoalTimeframe = 'daily' | 'weekly' | 'monthly' | 'custom';
+
+/**
+ * Type of target metric for a goal
+ */
+export type GoalTargetType = 'items' | 'hours' | 'topics';
+
+/**
+ * Status of a learning goal
+ */
+export type GoalStatus = 'active' | 'completed' | 'abandoned';
+
+/**
+ * A learning goal - stored in IndexedDB
+ */
+export interface LearningGoal {
+  id: string;
+  title: string;
+  description?: string;
+  timeframe: GoalTimeframe;
+  targetType: GoalTargetType;
+  targetValue: number;
+  currentValue: number;
+  startDate: string;
+  endDate?: string;
+  tags?: string[];       // Filter matching items by tags
+  categories?: string[]; // Filter matching items by categories
+  contentTypes?: SourceType[]; // Filter matching items by type
+  status: GoalStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ============================================================================
+// User Patterns Types
+// ============================================================================
+
+/**
+ * User behavior patterns - stored in localStorage
+ * Tracks frequency of user interactions
+ */
+export interface UserPatterns {
+  version: number;
+  tagFrequency: Record<string, number>;
+  typeFrequency: Record<SourceType, number>;
+  categoryFrequency: Record<string, number>;
+  statusTransitions: Record<string, Record<string, number>>;
+  recentTags: string[]; // Last 20 unique tags used
+  lastUpdated: string;
+}
+
+/**
+ * Default patterns for new users
+ */
+export const DEFAULT_USER_PATTERNS: UserPatterns = {
+  version: 1,
+  tagFrequency: {},
+  typeFrequency: {
+    youtube: 0,
+    book: 0,
+    audiobook: 0,
+    article: 0,
+    podcast: 0,
+    github: 0,
+    other: 0,
+  },
+  categoryFrequency: {},
+  statusTransitions: {},
+  recentTags: [],
+  lastUpdated: new Date().toISOString(),
+};
+
+// ============================================================================
+// AI Insights Types
+// ============================================================================
+
+/**
+ * AI-generated insights for an item - stored in IndexedDB
+ */
+export interface AIInsight {
+  id: string;
+  interestId: string;
+  studyNotes?: StudyNotes;
+  summary?: string;
+  keyTopics?: string[];
+  relatedItemIds?: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ============================================================================
+// Export Data Types
+// ============================================================================
+
+/**
+ * Complete export of all user data
+ */
+export interface UserDataExport {
+  exportedAt: string;
+  version: number;
+  preferences: UserPreferences;
+  patterns: UserPatterns;
+  goals: LearningGoal[];
+  insights: AIInsight[];
 }

@@ -3,6 +3,9 @@ import { X, Loader2, Sparkles, CheckCircle, AlertCircle, Clock, FileText } from 
 import type { EnrichedCreateInput, SourceType, ItemStatus, SeriesInfo } from '../types';
 import { detectSourceType } from '../types';
 import { enrichUrl, isYouTubeUrl, isArticleUrl } from '../services/enrich';
+import { useSmartSuggestions } from '../hooks/useSmartSuggestions';
+import { usePatterns } from '../hooks/usePatterns';
+import { SuggestionChips } from './SuggestionChips';
 
 interface AddInterestModalProps {
   isOpen: boolean;
@@ -29,6 +32,11 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
   const [type, setType] = useState<SourceType>('other');
   const [status, setStatus] = useState<ItemStatus>('backlog');
   const [tags, setTags] = useState('');
+
+  // Smart suggestions and pattern tracking
+  const tagArray = tags.split(',').map(t => t.trim()).filter(Boolean);
+  const suggestions = useSmartSuggestions({ title, url, currentTags: tagArray });
+  const { recordTagUsage, recordTypeUsage } = usePatterns();
   const [transcript, setTranscript] = useState<string | null>(null);
   const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [author, setAuthor] = useState('');
@@ -71,6 +79,14 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
     setSeriesInfo(null);
     setTruncated(false);
   }, []);
+
+  const handleSuggestionSelect = (suggestion: string) => {
+    if (tags) {
+      setTags(tags + ', ' + suggestion);
+    } else {
+      setTags(suggestion);
+    }
+  };
 
   const handleUrlChange = async (newUrl: string) => {
     setUrl(newUrl);
@@ -196,6 +212,13 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
       };
 
       await onAdd(input);
+
+      // Record patterns for smart suggestions
+      if (input.tags && input.tags.length > 0) {
+        recordTagUsage(input.tags);
+      }
+      recordTypeUsage(type);
+
       resetForm();
       onClose();
     } catch (err) {
@@ -400,6 +423,11 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
               onChange={(e) => setTags(e.target.value)}
               placeholder="programming, ai, productivity (comma-separated)"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
+            />
+            <SuggestionChips
+              suggestions={suggestions}
+              onSelect={handleSuggestionSelect}
+              selectedTags={tagArray}
             />
           </div>
 

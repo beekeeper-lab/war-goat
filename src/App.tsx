@@ -7,13 +7,17 @@ import { InterestDetail } from './components/InterestDetail';
 import { ObsidianExportModal } from './components/ObsidianExportModal';
 import { SyncProgress } from './components/SyncProgress';
 import { SearchModal } from './components/SearchModal';
+import { SettingsPanel } from './components/SettingsPanel';
+import { GoalsPanel } from './components/GoalsPanel';
+import { PrivacyConsentModal } from './components/PrivacyConsentModal';
+import { PreferencesProvider, usePreferences } from './contexts/PreferencesContext';
 import { useInterests } from './hooks/useInterests';
 import { useObsidianStatus } from './hooks/useObsidianStatus';
 import { useSearchStatus } from './hooks/useSearch';
 import { exportToObsidian, syncToObsidian, searchRelated } from './services/api';
 import type { InterestItem, SourceType, ItemStatus, EnrichedCreateInput, ObsidianExportOptions, SearchResult } from './types';
 
-export default function App() {
+function AppContent() {
   const {
     interests,
     loading,
@@ -25,15 +29,18 @@ export default function App() {
 
   const { isConnected: obsidianConnected } = useObsidianStatus();
   const { isAvailable: searchAvailable } = useSearchStatus();
+  const { preferences, showConsentModal, setConsentGiven } = usePreferences();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [showGoalsPanel, setShowGoalsPanel] = useState(false);
   const [searchInitialQuery, setSearchInitialQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<InterestItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState<SourceType | 'all'>('all');
-  const [statusFilter, setStatusFilter] = useState<ItemStatus | 'all'>('all');
-  const [categoryFilter, setCategoryFilter] = useState<string | 'all'>('all');
+  const [typeFilter, setTypeFilter] = useState<SourceType | 'all'>(preferences.defaultFilters.type);
+  const [statusFilter, setStatusFilter] = useState<ItemStatus | 'all'>(preferences.defaultFilters.status);
+  const [categoryFilter, setCategoryFilter] = useState<string | 'all'>(preferences.defaultFilters.category);
 
   // Obsidian export state
   const [exportItem, setExportItem] = useState<InterestItem | null>(null);
@@ -216,6 +223,8 @@ export default function App() {
         onAddClick={() => setShowAddModal(true)}
         onSearchClick={() => openSearch()}
         onSyncClick={handleSyncAll}
+        onSettingsClick={() => setShowSettingsPanel(true)}
+        onGoalsClick={() => setShowGoalsPanel(true)}
         syncing={syncState.active}
         obsidianConnected={obsidianConnected}
         searchAvailable={searchAvailable}
@@ -301,6 +310,29 @@ export default function App() {
         onAddToInterests={handleAddFromSearch}
         initialQuery={searchInitialQuery}
       />
+
+      <SettingsPanel
+        isOpen={showSettingsPanel}
+        onClose={() => setShowSettingsPanel(false)}
+      />
+
+      <GoalsPanel
+        isOpen={showGoalsPanel}
+        onClose={() => setShowGoalsPanel(false)}
+      />
+
+      <PrivacyConsentModal
+        isOpen={showConsentModal}
+        onConsent={setConsentGiven}
+      />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <PreferencesProvider>
+      <AppContent />
+    </PreferencesProvider>
   );
 }
