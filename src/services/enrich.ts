@@ -38,3 +38,8 @@ export async function enrichUrl(url: string): Promise<EnrichResult> {
 export function isYouTubeUrl(url: string): boolean {
   return /youtube\.com|youtu\.be/.test(url);
 }
+
+// Check if URL is a GitHub repository URL
+export function isGitHubUrl(url: string): boolean {
+  return /github\.com\/[\w-]+\/[\w.-]+/.test(url);
+}

@@ -11,6 +11,8 @@ import {
   Clock,
   CheckCircle,
   Circle,
+  Star,
+  GitFork,
 } from 'lucide-react';
 import type { InterestItem, ItemStatus } from '../types';
 import { ExportToObsidianButton } from './ExportToObsidianButton';
@@ -49,6 +51,37 @@ const STATUS_CONFIG = {
   'in-progress': { icon: Clock, label: 'In Progress', color: 'text-amber-500' },
   completed: { icon: CheckCircle, label: 'Completed', color: 'text-green-500' },
 };
+
+// Language colors matching GitHub's language colors
+const LANGUAGE_COLORS: Record<string, string> = {
+  JavaScript: '#f1e05a',
+  TypeScript: '#3178c6',
+  Python: '#3572A5',
+  Java: '#b07219',
+  'C++': '#f34b7d',
+  C: '#555555',
+  'C#': '#178600',
+  Go: '#00ADD8',
+  Rust: '#dea584',
+  Ruby: '#701516',
+  PHP: '#4F5D95',
+  Swift: '#F05138',
+  Kotlin: '#A97BFF',
+  Shell: '#89e051',
+  HTML: '#e34c26',
+  CSS: '#563d7c',
+  Vue: '#41b883',
+};
+
+function formatStarCount(count: number): string {
+  if (count >= 1000000) {
+    return `${(count / 1000000).toFixed(1)}M`;
+  }
+  if (count >= 1000) {
+    return `${(count / 1000).toFixed(1)}k`;
+  }
+  return String(count);
+}
 
 export function InterestCard({
   item,
@@ -144,6 +177,34 @@ export function InterestCard({
             <p className="text-sm text-gray-500 mt-1">by {item.author}</p>
           )}
 
+          {/* GitHub Stats */}
+          {item.type === 'github' && item.stars !== undefined && (
+            <div className="flex items-center gap-3 mt-2 text-sm">
+              <div className="flex items-center gap-1 text-gray-700">
+                <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                <span className="font-medium">{formatStarCount(item.stars)}</span>
+              </div>
+              {item.forks !== undefined && item.forks > 0 && (
+                <div className="flex items-center gap-1 text-gray-600">
+                  <GitFork className="w-4 h-4" />
+                  <span>{formatStarCount(item.forks)}</span>
+                </div>
+              )}
+              {item.language && (
+                <div className="flex items-center gap-1.5 text-gray-700">
+                  <Circle
+                    className="w-3 h-3"
+                    style={{
+                      fill: LANGUAGE_COLORS[item.language] || '#858585',
+                      color: LANGUAGE_COLORS[item.language] || '#858585',
+                    }}
+                  />
+                  <span>{item.language}</span>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex items-center gap-3 mt-3 flex-wrap">
             <button
               onClick={cycleStatus}
@@ -166,6 +227,23 @@ export function InterestCard({
                 ))}
                 {item.categories.length > 2 && (
                   <span className="text-xs text-gray-400">+{item.categories.length - 2}</span>
+                )}
+              </div>
+            )}
+
+            {/* GitHub Topics */}
+            {item.type === 'github' && item.topics && item.topics.length > 0 && (
+              <div className="flex gap-1 flex-wrap">
+                {item.topics.slice(0, 3).map((topic) => (
+                  <span
+                    key={topic}
+                    className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full"
+                  >
+                    {topic}
+                  </span>
+                ))}
+                {item.topics.length > 3 && (
+                  <span className="text-xs text-gray-400">+{item.topics.length - 3}</span>
                 )}
               </div>
             )}

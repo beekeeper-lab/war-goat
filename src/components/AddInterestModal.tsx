@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react';
 import { X, Loader2, Sparkles, CheckCircle, AlertCircle } from 'lucide-react';
 import type { EnrichedCreateInput, SourceType, ItemStatus } from '../types';
 import { detectSourceType } from '../types';
-import { enrichUrl, isYouTubeUrl } from '../services/enrich';
+import { enrichUrl, isYouTubeUrl, isGitHubUrl } from '../services/enrich';
+import { GitHubPreview } from './GitHubPreview';
 
 interface AddInterestModalProps {
   isOpen: boolean;
@@ -37,6 +38,13 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
   const [enrichStatus, setEnrichStatus] = useState<EnrichStatus>('idle');
   const [enrichMessage, setEnrichMessage] = useState<string | null>(null);
 
+  // GitHub-specific state
+  const [stars, setStars] = useState<number | undefined>(undefined);
+  const [forks, setForks] = useState<number | undefined>(undefined);
+  const [language, setLanguage] = useState<string | null>(null);
+  const [topics, setTopics] = useState<string[]>([]);
+  const [readme, setReadme] = useState<string | null>(null);
+
   const resetForm = useCallback(() => {
     setUrl('');
     setTitle('');
@@ -50,6 +58,12 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
     setError(null);
     setEnrichStatus('idle');
     setEnrichMessage(null);
+    // Reset GitHub state
+    setStars(undefined);
+    setForks(undefined);
+    setLanguage(null);
+    setTopics([]);
+    setReadme(null);
   }, []);
 
   const handleUrlChange = async (newUrl: string) => {
@@ -96,6 +110,47 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
         setEnrichMessage(err instanceof Error ? err.message : 'Enrichment failed');
       }
     }
+
+    // Auto-enrich GitHub URLs
+    if (isGitHubUrl(newUrl)) {
+      setEnrichStatus('loading');
+      setEnrichMessage('Fetching repository info...');
+
+      try {
+        const result = await enrichUrl(newUrl);
+
+        if (result.success && result.data) {
+          setTitle(result.data.title || '');
+          setDescription(result.data.description || '');
+          setAuthor(result.data.author || '');
+          setThumbnail(result.data.ownerAvatar || null);
+
+          // Set GitHub-specific fields
+          setStars(result.data.stars);
+          setForks(result.data.forks);
+          setLanguage(result.data.language || null);
+          setTopics(result.data.topics || []);
+
+          if (result.data.readme) {
+            setReadme(result.data.readme);
+            setEnrichStatus('success');
+            setEnrichMessage('Repository info & README loaded!');
+          } else if (result.data.readmeError) {
+            setEnrichStatus('success');
+            setEnrichMessage(`Repository info loaded. README: ${result.data.readmeError}`);
+          } else {
+            setEnrichStatus('success');
+            setEnrichMessage('Repository info loaded (no README available)');
+          }
+        } else {
+          setEnrichStatus('error');
+          setEnrichMessage(result.error || 'Failed to enrich GitHub URL');
+        }
+      } catch (err) {
+        setEnrichStatus('error');
+        setEnrichMessage(err instanceof Error ? err.message : 'Enrichment failed');
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -120,6 +175,12 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
         transcript: transcript || undefined,
         thumbnail: thumbnail || undefined,
         author: author || undefined,
+        // GitHub-specific fields
+        stars,
+        forks,
+        language: language || undefined,
+        topics: topics.length > 0 ? topics : undefined,
+        hasReadme: readme !== null,
       };
 
       await onAdd(input);
@@ -172,7 +233,7 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
               required
             />
             <p className="text-xs text-gray-500 mt-1">
-              Paste a YouTube URL to auto-fetch title, thumbnail & transcript
+              Paste a YouTube or GitHub URL to auto-fetch metadata
             </p>
 
             {/* Enrich status indicator */}
@@ -200,13 +261,30 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
             )}
           </div>
 
-          {/* Thumbnail preview */}
-          {thumbnail && (
+          {/* Thumbnail preview (YouTube) */}
+          {thumbnail && type !== 'github' && (
             <div className="relative">
               <img
                 src={thumbnail}
                 alt="Thumbnail"
                 className="w-full h-40 object-cover rounded-lg"
+              />
+              <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                Auto-fetched
+              </div>
+            </div>
+          )}
+
+          {/* GitHub Preview */}
+          {type === 'github' && enrichStatus === 'success' && stars !== undefined && (
+            <div className="relative">
+              <GitHubPreview
+                stars={stars}
+                forks={forks}
+                language={language}
+                topics={topics}
+                description={description}
               />
               <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
                 <Sparkles className="w-3 h-3" />

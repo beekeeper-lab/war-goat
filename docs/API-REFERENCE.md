@@ -28,7 +28,7 @@ This document describes all the REST API endpoints exposed by the War Goat backe
 
 ### POST /api/enrich
 
-Fetches metadata and transcript for a URL (currently optimized for YouTube).
+Fetches metadata for a URL. Supports YouTube videos and GitHub repositories.
 
 **Request**:
 ```json
@@ -73,7 +73,70 @@ Fetches metadata and transcript for a URL (currently optimized for YouTube).
 }
 ```
 
-**Response (Non-YouTube URL)**:
+**Response (GitHub success)**:
+```json
+{
+  "success": true,
+  "type": "github",
+  "data": {
+    "title": "react",
+    "description": "The library for web and native user interfaces.",
+    "author": "facebook",
+    "stars": 242400,
+    "forks": 50437,
+    "language": "JavaScript",
+    "topics": ["declarative", "frontend", "javascript", "library", "react", "ui"],
+    "license": "MIT License",
+    "openIssues": 950,
+    "lastCommitDate": "2026-01-20T10:30:00Z",
+    "defaultBranch": "main",
+    "fullName": "facebook/react",
+    "ownerAvatar": "https://avatars.githubusercontent.com/u/69631?v=4",
+    "hasReadme": true,
+    "readme": "# React\n\nReact is a JavaScript library...",
+    "categories": ["Declarative", "Frontend", "Javascript", "Library", "React", "Ui"]
+  }
+}
+```
+
+**Response (GitHub with README error)**:
+```json
+{
+  "success": true,
+  "type": "github",
+  "data": {
+    "title": "repo-name",
+    "description": "Repository description",
+    "author": "owner",
+    "stars": 100,
+    "forks": 20,
+    "language": "TypeScript",
+    "topics": [],
+    "hasReadme": false,
+    "readme": null,
+    "readmeError": "README not found for this repository"
+  }
+}
+```
+
+**Response (GitHub error - not found)**:
+```json
+{
+  "success": false,
+  "error": "Repository not found: owner/nonexistent-repo"
+}
+```
+
+**Response (GitHub error - rate limited)**:
+```json
+{
+  "success": false,
+  "error": "GitHub API rate limit exceeded. Please try again later.",
+  "rateLimitReset": 1609459200
+}
+```
+
+**Response (Non-YouTube/GitHub URL)**:
 ```json
 {
   "success": true,
@@ -86,9 +149,10 @@ Fetches metadata and transcript for a URL (currently optimized for YouTube).
 ```
 
 **How It Works**:
-1. Detects if URL is YouTube
+1. Detects URL type (YouTube, GitHub, or other)
 2. For YouTube: Fetches oEmbed metadata + spawns MCP for transcript
-3. For other URLs: Returns basic type detection only
+3. For GitHub: Fetches repository metadata via GitHub REST API + README content
+4. For other URLs: Returns basic type detection only
 
 ---
 
@@ -306,7 +370,18 @@ interface InterestItem {
 
   // GitHub-specific
   stars?: number;
+  forks?: number;
   language?: string;
+  topics?: string[];
+  license?: string;
+  openIssues?: number;
+  lastCommitDate?: string;
+  defaultBranch?: string;
+  fullName?: string;
+  ownerAvatar?: string;
+  hasReadme?: boolean;
+  readme?: string;
+  readmeError?: string;
 }
 ```
 

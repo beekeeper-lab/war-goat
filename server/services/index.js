@@ -30,6 +30,17 @@ export {
   getVideoMetrics,
 } from './youtube.js';
 
+// GitHub service
+export {
+  extractRepoInfo,
+  isGitHubUrl,
+  formatStarCount,
+  mapTopicsToCategories,
+  getMetadata as getGitHubMetadata,
+  getReadme as getGitHubReadme,
+  enrichGitHubUrl,
+} from './github.js';
+
 // Obsidian service
 export {
   sanitizeFilename,

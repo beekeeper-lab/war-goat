@@ -17,6 +17,7 @@ import { existsSync } from 'fs';
 
 // Import our service layer
 import { enrichYouTubeUrl, isYouTubeUrl, extractVideoId } from './services/index.js';
+import { enrichGitHubUrl, isGitHubUrl } from './services/index.js';
 import {
   checkObsidianConnection,
   exportInterest,
@@ -98,8 +99,18 @@ app.post('/api/enrich', async (req, res) => {
       return res.json(result);
     }
 
-    // For non-YouTube URLs, return basic info
-    // Future: Add enrichment for other source types
+    // Check if it's a GitHub URL
+    if (isGitHubUrl(url)) {
+      const result = await enrichGitHubUrl(url);
+      console.log(`[Enrich] GitHub enrichment complete:`, {
+        title: result.data?.title,
+        stars: result.data?.stars,
+        hasReadme: result.data?.hasReadme,
+      });
+      return res.json(result);
+    }
+
+    // For other URLs, return basic info
     return res.json({
       success: true,
       type: 'other',

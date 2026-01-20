@@ -43,6 +43,17 @@ export interface InterestItem {
   // GitHub specific
   stars?: number;
   language?: string;
+  forks?: number;
+  topics?: string[];
+  license?: string;
+  lastCommitDate?: string;
+  hasReadme?: boolean;
+  readme?: string;
+  readmeError?: string;
+  ownerAvatar?: string;
+  openIssues?: number;
+  defaultBranch?: string;
+  fullName?: string;
 
   // Obsidian integration
   obsidianPath?: string;
@@ -65,6 +76,18 @@ export interface EnrichedCreateInput extends CreateInterestInput {
   author?: string;
   channelName?: string;
   categories?: string[];
+  // GitHub specific
+  stars?: number;
+  forks?: number;
+  language?: string;
+  topics?: string[];
+  license?: string;
+  ownerAvatar?: string;
+  hasReadme?: boolean;
+  lastCommitDate?: string;
+  openIssues?: number;
+  defaultBranch?: string;
+  fullName?: string;
 }
 
 export interface UpdateInterestInput {
