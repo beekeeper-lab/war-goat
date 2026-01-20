@@ -1,0 +1,81 @@
+
+ RUN  v2.1.9 /home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t002
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > caching > returns cached result for identical queries
+[Brave Search] Performing web search: test query
+[Brave Search] Cache hit for web search: test query
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > caching > different query types have separate cache entries
+[Brave Search] Performing web search: test query
+[Brave Search] Performing news search: test query
+[Brave Search] Performing video search: test query
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > caching > different freshness values have separate cache entries
+[Brave Search] Performing web search: test query
+[Brave Search] Performing web search: test query
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > caching > cache can be cleared
+[Brave Search] Performing web search: test query
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > webSearch > calls brave_web_search with correct params
+[Brave Search] Performing web search: react hooks
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > webSearch > parses web results correctly
+[Brave Search] Performing web search: react hooks
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > webSearch > handles API errors gracefully
+[Brave Search] Performing web search: test
+
+stderr | server/__tests__/brave-search.test.js > brave-search service > webSearch > handles API errors gracefully
+[Brave Search] Web search failed: API Error
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > newsSearch > parses news results correctly
+[Brave Search] Performing news search: latest tech
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > videoSearch > parses video results correctly
+[Brave Search] Performing video search: coding tutorial
+
+ ✓ server/__tests__/brave-search.test.js (18 tests) 25ms
+stdout | server/__tests__/article.test.js > Article Service > enrichArticleUrl > returns properly shaped result object
+[Article] Enriching: https://example.com/sample-article
+
+stdout | server/__tests__/article.test.js > Article Service > enrichArticleUrl > handles fetch errors gracefully
+[Article] Enriching: https://example.com/article
+
+stderr | server/__tests__/article.test.js > Article Service > enrichArticleUrl > handles fetch errors gracefully
+[Article] Enrichment failed: Network error
+
+stdout | server/__tests__/article.test.js > Article Service > enrichArticleUrl > handles extraction failures gracefully
+[Article] Enriching: https://example.com/empty
+
+stdout | server/__tests__/article.test.js > Article Service > enrichArticleUrl > enrichment completes within reasonable time
+[Article] Enriching: https://example.com/article
+
+ ✓ server/__tests__/article.test.js (29 tests) 406ms
+ ✓ src/components/__tests__/InterestList.test.tsx (19 tests) 426ms
+ ✓ src/components/__tests__/Header.test.tsx (15 tests) 726ms
+ ✓ src/components/__tests__/FilterBar.test.tsx (13 tests) 892ms
+ ✓ src/components/__tests__/InterestCard.test.tsx (38 tests) 1184ms
+stderr | src/components/__tests__/InterestDetail.test.tsx > InterestDetail > transcript section (YouTube) > shows transcript unavailable message when fetch fails
+Failed to fetch transcript: Error: Fetch failed
+    at /home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t002/src/components/__tests__/InterestDetail.test.tsx:182:47
+    at file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t002/node_modules/@vitest/runner/dist/index.js:146:14
+    at file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t002/node_modules/@vitest/runner/dist/index.js:533:11
+    at runWithTimeout (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t002/node_modules/@vitest/runner/dist/index.js:39:7)
+    at runTest (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t002/node_modules/@vitest/runner/dist/index.js:1056:17)
+    at runSuite (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t002/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t002/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t002/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runFiles (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t002/node_modules/@vitest/runner/dist/index.js:1262:5)
+    at startTests (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t002/node_modules/@vitest/runner/dist/index.js:1271:3)
+
+ ✓ src/components/__tests__/InterestDetail.test.tsx (49 tests) 2750ms
+ ✓ src/components/__tests__/AddInterestModal.test.tsx (33 tests) 4630ms
+   ✓ AddInterestModal > YouTube URL enrichment > triggers enrichment for YouTube URLs 333ms
+   ✓ AddInterestModal > YouTube URL enrichment > populates title from enriched data 305ms
+
+ Test Files  8 passed (8)
+      Tests  214 passed (214)
+   Start at  14:22:52
+   Duration  6.08s (transform 791ms, setup 777ms, collect 2.55s, tests 11.04s, environment 4.48s, prepare 1.35s)
+
