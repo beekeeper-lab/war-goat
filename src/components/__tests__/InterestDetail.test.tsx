@@ -25,7 +25,9 @@ describe('InterestDetail', () => {
     mockedGenerateArticleSummary.mockResolvedValue({
       summary: 'Test summary',
       keyPoints: ['Point 1', 'Point 2'],
+      mainTheme: 'Test theme',
       suggestedTags: ['tag1', 'tag2'],
+      actionItems: [],
     })
   })
 
@@ -295,7 +297,9 @@ describe('InterestDetail', () => {
       mockedGenerateArticleSummary.mockResolvedValue({
         summary: 'This is the AI generated summary',
         keyPoints: [],
+        mainTheme: '',
         suggestedTags: [],
+        actionItems: [],
       })
       const item = createArticleItem({ hasArticleContent: true })
       const { user } = render(<InterestDetail {...defaultProps} item={item} />)
@@ -312,7 +316,9 @@ describe('InterestDetail', () => {
       mockedGenerateArticleSummary.mockResolvedValue({
         summary: 'Summary text',
         keyPoints: ['First key point', 'Second key point'],
+        mainTheme: '',
         suggestedTags: [],
+        actionItems: [],
       })
       const item = createArticleItem({ hasArticleContent: true })
       const { user } = render(<InterestDetail {...defaultProps} item={item} />)
@@ -331,7 +337,9 @@ describe('InterestDetail', () => {
       mockedGenerateArticleSummary.mockResolvedValue({
         summary: 'Summary text',
         keyPoints: [],
+        mainTheme: '',
         suggestedTags: ['react', 'typescript'],
+        actionItems: [],
       })
       const item = createArticleItem({ hasArticleContent: true })
       const { user } = render(<InterestDetail {...defaultProps} item={item} />)
