@@ -14,7 +14,7 @@ Outputs:
 import json
 import sys
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import glob
 
@@ -23,17 +23,33 @@ def find_latest_transcript(project_path: str) -> Path | None:
     """Find the most recent Claude transcript for this project."""
     # Claude stores transcripts in ~/.claude/projects/{encoded-path}/
     home = Path.home()
+    claude_projects = home / ".claude" / "projects"
 
-    # Encode the project path (Claude replaces / with -)
-    encoded = project_path.replace("/", "-").lstrip("-")
-    claude_project_dir = home / ".claude" / "projects" / encoded
+    # Try multiple encoding strategies since Claude's encoding can vary
+    encodings_to_try = [
+        # Standard: replace / with -
+        project_path.replace("/", "-").lstrip("-"),
+        # Also replace _ with -
+        project_path.replace("/", "-").replace("_", "-").lstrip("-"),
+    ]
 
-    if not claude_project_dir.exists():
-        # Try finding it with glob pattern
-        pattern = str(home / ".claude" / "projects" / f"*{Path(project_path).name}*")
-        matches = glob.glob(pattern)
-        if matches:
-            claude_project_dir = Path(matches[0])
+    for encoded in encodings_to_try:
+        claude_project_dir = claude_projects / encoded
+        if claude_project_dir.exists():
+            break
+    else:
+        # Try finding with glob pattern matching the directory name
+        dir_name = Path(project_path).name
+        # Try both underscore and hyphen variants
+        patterns = [
+            f"*{dir_name}*",
+            f"*{dir_name.replace('_', '-')}*",
+        ]
+        for pattern in patterns:
+            matches = glob.glob(str(claude_projects / pattern))
+            if matches:
+                claude_project_dir = Path(matches[0])
+                break
         else:
             return None
 
@@ -70,29 +86,36 @@ def extract_usage_from_transcript(transcript_path: Path) -> dict:
                         start_time = ts
                     end_time = ts
 
-                # Extract model
-                if 'model' in entry:
-                    model = entry['model']
+                # Extract model and usage from message object (Claude's format)
+                if 'message' in entry:
+                    msg = entry['message']
+                    if 'model' in msg:
+                        model = msg['model']
+                    if 'usage' in msg:
+                        usage = msg['usage']
+                        total_input += usage.get('input_tokens', 0)
+                        total_output += usage.get('output_tokens', 0)
+                        total_cache_read += usage.get('cache_read_input_tokens', 0)
+                        total_cache_write += usage.get('cache_creation_input_tokens', 0)
 
-                # Extract usage from messages
-                if 'usage' in entry:
+                    # Count tool calls in message content
+                    content = msg.get('content', [])
+                    if isinstance(content, list):
+                        for block in content:
+                            if isinstance(block, dict) and block.get('type') == 'tool_use':
+                                tool_calls += 1
+
+                # Also check top-level usage (some formats)
+                if 'usage' in entry and 'message' not in entry:
                     usage = entry['usage']
                     total_input += usage.get('input_tokens', 0)
                     total_output += usage.get('output_tokens', 0)
                     total_cache_read += usage.get('cache_read_input_tokens', 0)
                     total_cache_write += usage.get('cache_creation_input_tokens', 0)
 
-                # Count tool calls
+                # Count standalone tool_use entries
                 if entry.get('type') == 'tool_use':
                     tool_calls += 1
-
-                # Also check message content for tool_use blocks
-                if 'message' in entry and 'content' in entry.get('message', {}):
-                    content = entry['message']['content']
-                    if isinstance(content, list):
-                        for block in content:
-                            if isinstance(block, dict) and block.get('type') == 'tool_use':
-                                tool_calls += 1
 
             except json.JSONDecodeError:
                 continue
@@ -156,7 +179,7 @@ def update_workflow_summary(project_dir: Path, workflow_id: str, stage: str, usa
 
     # Add this stage
     summary['stages'][stage] = usage
-    summary['last_updated'] = datetime.utcnow().isoformat() + 'Z'
+    summary['last_updated'] = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
 
     # Update totals
     for key in ['input_tokens', 'output_tokens', 'cache_read_tokens',
@@ -192,7 +215,7 @@ def main():
 
     # Create the record
     record = {
-        'timestamp': datetime.utcnow().isoformat() + 'Z',
+        'timestamp': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
         'work_item_id': workflow_id,
         'stage': stage,
         **usage
