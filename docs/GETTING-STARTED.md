@@ -365,4 +365,42 @@ Now that you're up and running:
 3. **Explore MCP integration** - See how we connect to external services
 4. **Customize** - Add new categories, change colors, extend functionality
 
+---
+
+## Claude Code Integration
+
+This project includes custom Claude Code commands for development workflows:
+
+### Quick Commands
+```bash
+/prime          # Get oriented with the codebase
+/start          # Start development servers
+/test           # Run all tests
+/commit         # Test, commit, push, create PR
+```
+
+### Planning Commands (TDD)
+```bash
+/feature "Add user authentication"   # Plan a new feature
+/bug "Fix login timeout"             # Plan a bug fix
+/implement specs/feature-auth.md     # Execute a plan
+```
+
+### Multi-Agent Workflow
+For complex features, use the multi-agent workflow system:
+```bash
+/start-workflow F001 feature "Complex feature"
+```
+
+See [Claude Commands README](../.claude/commands/README.md) for complete documentation.
+
+---
+
+## Related Documentation
+
+- [Development Guide](DEVELOPMENT.md) - Development workflows and practices
+- [Architecture Overview](ARCHITECTURE.md) - System architecture
+- [Multi-Agent Workflow](MULTI-AGENT-WORKFLOW.md) - Parallel development system
+- [API Reference](API-REFERENCE.md) - REST API documentation
+
 Happy learning!

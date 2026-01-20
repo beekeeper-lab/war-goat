@@ -9,6 +9,14 @@ export type SourceType =
 
 export type ItemStatus = 'backlog' | 'in-progress' | 'completed';
 
+// Series detection result for article navigation
+export interface SeriesInfo {
+  isPart: boolean;
+  prevUrl?: string;
+  nextUrl?: string;
+  breadcrumbs?: string[];
+}
+
 export interface InterestItem {
   id: string;
   url: string;
@@ -39,6 +47,15 @@ export interface InterestItem {
   // Article specific
   siteName?: string;
   publishedDate?: string;
+  articleContent?: string;
+  hasArticleContent?: boolean;
+  articleError?: string;
+  excerpt?: string;
+  wordCount?: number;
+  readingTime?: number;
+  isDocumentation?: boolean;
+  truncated?: boolean;
+  seriesInfo?: SeriesInfo;
 
   // GitHub specific
   stars?: number;
@@ -76,6 +93,16 @@ export interface EnrichedCreateInput extends CreateInterestInput {
   author?: string;
   channelName?: string;
   categories?: string[];
+  // Article specific enrichment
+  articleContent?: string;
+  excerpt?: string;
+  wordCount?: number;
+  readingTime?: number;
+  siteName?: string;
+  publishedDate?: string;
+  isDocumentation?: boolean;
+  seriesInfo?: SeriesInfo;
+  truncated?: boolean;
   // GitHub specific
   stars?: number;
   forks?: number;
@@ -96,12 +123,10 @@ export interface UpdateInterestInput {
   status?: ItemStatus;
   tags?: string[];
   notes?: string;
-  // Obsidian sync tracking
   obsidianPath?: string;
   obsidianSyncedAt?: string;
 }
 
-// URL detection patterns
 export const URL_PATTERNS: Record<SourceType, RegExp[]> = {
   youtube: [
     /youtube\.com\/watch/,
@@ -117,7 +142,7 @@ export const URL_PATTERNS: Record<SourceType, RegExp[]> = {
     /audible\.com/,
     /libro\.fm/,
   ],
-  article: [], // Fallback for most URLs
+  article: [],
   podcast: [
     /spotify\.com.*episode/,
     /podcasts\.apple\.com/,
@@ -139,17 +164,13 @@ export function detectSourceType(url: string): SourceType {
       }
     }
   }
-  // Default to article for http(s) URLs, other for everything else
   if (/^https?:\/\//.test(url)) {
     return 'article';
   }
   return 'other';
 }
 
-// ============================================================================
 // Obsidian Integration Types
-// ============================================================================
-
 export interface ObsidianSettings {
   enabled: boolean;
   defaultFolder: string;
@@ -199,4 +220,50 @@ export interface StudyNotes {
   quotes: Array<{ text: string; timestamp?: string }>;
   relatedTopics: string[];
   actionItems: string[];
+}
+
+// Brave Search Integration Types
+export interface SearchResult {
+  title: string;
+  url: string;
+  description: string;
+  thumbnail?: string;
+  publishedDate?: string;
+  source: string;
+  type: 'web' | 'news' | 'video';
+  duration?: string;
+  age?: string;
+}
+
+export interface SearchOptions {
+  query: string;
+  type?: 'web' | 'news' | 'video';
+  freshness?: 'pd' | 'pw' | 'pm' | 'py';
+  count?: number;
+  summary?: boolean;
+}
+
+export interface SearchResponse {
+  success: boolean;
+  results: SearchResult[];
+  summary?: string;
+  query: string;
+  cached?: boolean;
+  error?: string;
+}
+
+export interface RelatedSearchResponse extends SearchResponse {
+  generatedQuery: string;
+}
+
+export interface BraveSearchStatus {
+  available: boolean;
+  error?: string;
+}
+
+// Article Summary Types
+export interface ArticleSummary {
+  summary: string;
+  keyPoints: string[];
+  suggestedTags: string[];
 }

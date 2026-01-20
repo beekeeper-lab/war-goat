@@ -10,7 +10,9 @@ interface InterestListProps {
   onDelete: (id: string) => void;
   onItemClick: (item: InterestItem) => void;
   onExportToObsidian?: (item: InterestItem) => void;
+  onFindRelated?: (item: InterestItem) => void;
   obsidianConnected?: boolean;
+  searchAvailable?: boolean;
 }
 
 export function InterestList({
@@ -21,7 +23,9 @@ export function InterestList({
   onDelete,
   onItemClick,
   onExportToObsidian,
+  onFindRelated,
   obsidianConnected = false,
+  searchAvailable = false,
 }: InterestListProps) {
   if (loading) {
     return (
@@ -61,7 +65,9 @@ export function InterestList({
           onDelete={onDelete}
           onClick={() => onItemClick(item)}
           onExportToObsidian={onExportToObsidian ? () => onExportToObsidian(item) : undefined}
+          onFindRelated={onFindRelated ? () => onFindRelated(item) : undefined}
           obsidianConnected={obsidianConnected}
+          searchAvailable={searchAvailable}
         />
       ))}
     </div>

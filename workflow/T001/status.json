@@ -1,0 +1,50 @@
+{
+  "workflowId": "T001",
+  "type": "task",
+  "title": "Unit Tests for Backend Services",
+  "createdAt": "2026-01-20T13:01:52-05:00",
+  "currentStage": "complete",
+  "stages": {
+    "requirements": {
+      "status": "complete",
+      "startedAt": "2026-01-20T13:01:52.720211",
+      "completedAt": "2026-01-20T13:15:00-05:00",
+      "agent": "requirements-agent",
+      "output": "1-requirements.md"
+    },
+    "architecture": {
+      "status": "complete",
+      "startedAt": "2026-01-20T13:20:00-05:00",
+      "completedAt": "2026-01-20T13:35:00-05:00",
+      "agent": "architecture-agent",
+      "output": "2-architecture.md"
+    },
+    "implementation": {
+      "status": "complete",
+      "startedAt": "2026-01-20T13:33:00-05:00",
+      "completedAt": "2026-01-20T13:50:00-05:00",
+      "agent": "implementor-agent",
+      "output": "3-implementation.md"
+    },
+    "qa": {
+      "status": "complete",
+      "startedAt": "2026-01-20T13:59:00-05:00",
+      "completedAt": "2026-01-20T14:05:00-05:00",
+      "agent": "qa-agent",
+      "output": "4-qa-report.md"
+    },
+    "integration-gate": {
+      "status": "complete",
+      "startedAt": "2026-01-20T14:22:00-05:00",
+      "completedAt": "2026-01-20T14:26:00-05:00",
+      "agent": "integration-gate-agent",
+      "output": "5-integration-gate.md"
+    }
+  },
+  "branch": "task/T001",
+  "worktree": "../war-goat-t001",
+  "bugs": [],
+  "notes": [],
+  "paneId": "%2",
+  "spec": "specs/T001-spec.md"
+}

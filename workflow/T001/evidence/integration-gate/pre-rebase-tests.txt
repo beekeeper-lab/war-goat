@@ -1,0 +1,209 @@
+
+> war-goat@0.1.0 test
+> vitest --run
+
+
+ RUN  v2.1.9 /home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001
+
+ ✓ server/__tests__/api-handlers.test.js (44 tests) 15ms
+stderr | server/__tests__/youtube.test.js > YouTube Service > getMetadata > returns null when oEmbed API fails
+oEmbed failed with status 404
+
+stderr | server/__tests__/youtube.test.js > YouTube Service > getMetadata > returns null when fetch throws
+Failed to fetch YouTube metadata: Network error
+
+stdout | server/__tests__/youtube.test.js > YouTube Service > getTranscript > calls MCP client with correct parameters
+[YouTube] Fetching transcript for: https://youtube.com/watch?v=abc123
+
+stdout | server/__tests__/youtube.test.js > YouTube Service > getTranscript > returns success object with transcript
+[YouTube] Fetching transcript for: https://youtube.com/watch?v=abc123
+
+stdout | server/__tests__/youtube.test.js > YouTube Service > getTranscript > returns error object when MCP fails
+[YouTube] Fetching transcript for: https://youtube.com/watch?v=abc123
+
+stderr | server/__tests__/youtube.test.js > YouTube Service > getTranscript > returns error object when MCP fails
+[YouTube] Transcript fetch failed: MCP connection failed
+
+stdout | server/__tests__/youtube.test.js > YouTube Service > getTranscript > handles missing content in MCP response
+[YouTube] Fetching transcript for: https://youtube.com/watch?v=abc123
+
+stdout | server/__tests__/youtube.test.js > YouTube Service > enrichYouTubeUrl > returns full enrichment for valid URL
+[YouTube] Fetching transcript for: https://youtube.com/watch?v=abc123
+
+stdout | server/__tests__/youtube.test.js > YouTube Service > enrichYouTubeUrl > calls metadata and transcript in parallel
+[YouTube] Fetching transcript for: https://youtube.com/watch?v=abc123
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > caching > returns cached result for identical queries
+[Brave Search] Performing web search: test query
+[Brave Search] Cache hit for web search: test query
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > caching > different query types have separate cache entries
+[Brave Search] Performing web search: test query
+[Brave Search] Performing news search: test query
+[Brave Search] Performing video search: test query
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > caching > different freshness values have separate cache entries
+[Brave Search] Performing web search: test query
+[Brave Search] Performing web search: test query
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > caching > cache can be cleared
+[Brave Search] Performing web search: test query
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > webSearch > calls brave_web_search with correct params
+[Brave Search] Performing web search: react hooks
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > webSearch > parses web results correctly
+[Brave Search] Performing web search: react hooks
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > webSearch > handles API errors gracefully
+[Brave Search] Performing web search: test
+
+stderr | server/__tests__/brave-search.test.js > brave-search service > webSearch > handles API errors gracefully
+[Brave Search] Web search failed: API Error
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > newsSearch > parses news results correctly
+[Brave Search] Performing news search: latest tech
+
+stdout | server/__tests__/brave-search.test.js > brave-search service > videoSearch > parses video results correctly
+[Brave Search] Performing video search: coding tutorial
+
+stderr | server/__tests__/obsidian.test.js > Obsidian Service > findExistingNote > returns null when REST search throws
+[Obsidian] Search failed: Network error
+[Obsidian] MCP search failed: MCP error
+
+stderr | server/__tests__/obsidian.test.js > Obsidian Service > exportInterest > creates note with correct content
+[Obsidian] MCP search failed: Cannot read properties of undefined (reading 'callTool')
+
+stderr | server/__tests__/obsidian.test.js > Obsidian Service > exportInterest > attempts study notes generation when requested with transcript
+[Obsidian] MCP search failed: Cannot read properties of undefined (reading 'callTool')
+[Obsidian] ANTHROPIC_API_KEY not set, skipping study notes generation
+
+stderr | server/__tests__/obsidian.test.js > Obsidian Service > exportInterest > handles export errors gracefully
+[Obsidian] MCP search failed: MCP write also failed
+[Obsidian] REST write failed: Write failed
+[Obsidian] MCP write failed: MCP write also failed
+[Obsidian] Export failed: Error: Failed to write note: MCP write also failed
+    at writeNote (/home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/server/services/obsidian.js:325:11)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Module.exportInterest (/home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/server/services/obsidian.js:367:5)
+    at /home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/server/__tests__/obsidian.test.js:423:22
+    at file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/node_modules/@vitest/runner/dist/index.js:533:5
+    at runTest (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/node_modules/@vitest/runner/dist/index.js:1056:11)
+    at runSuite (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runFiles (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/node_modules/@vitest/runner/dist/index.js:1262:5)
+
+stderr | server/__tests__/obsidian.test.js > Obsidian Service > updateNoteFrontmatter > handles missing note
+[Obsidian] Frontmatter update failed: Error: Failed to read note
+    at Module.updateNoteFrontmatter (/home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/server/services/obsidian.js:399:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/server/__tests__/obsidian.test.js:492:22
+    at file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/node_modules/@vitest/runner/dist/index.js:533:5
+    at runTest (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/node_modules/@vitest/runner/dist/index.js:1056:11)
+    at runSuite (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runFiles (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/node_modules/@vitest/runner/dist/index.js:1262:5)
+    at startTests (file:///home/gregg/Nextcloud/workspace/Hackshop_Agentic_Dev_Tools-t001/node_modules/@vitest/runner/dist/index.js:1271:3)
+
+ ✓ server/__tests__/brave-search.test.js (18 tests) 14ms
+stderr | server/__tests__/obsidian.test.js > Obsidian Service > syncAll > exports each item
+[Obsidian] MCP search failed: Cannot read properties of undefined (reading 'callTool')
+[Obsidian] MCP search failed: Cannot read properties of undefined (reading 'callTool')
+[Obsidian] MCP search failed: Cannot read properties of undefined (reading 'callTool')
+
+stderr | server/__tests__/obsidian.test.js > Obsidian Service > syncAll > tracks created/skipped/failed counts
+[Obsidian] MCP search failed: Cannot read properties of undefined (reading 'callTool')
+[Obsidian] MCP search failed: Cannot read properties of undefined (reading 'callTool')
+
+stderr | server/__tests__/obsidian.test.js > Obsidian Service > syncAll > calls progress callback
+[Obsidian] MCP search failed: Cannot read properties of undefined (reading 'callTool')
+[Obsidian] MCP search failed: Cannot read properties of undefined (reading 'callTool')
+[Obsidian] MCP search failed: Cannot read properties of undefined (reading 'callTool')
+
+stdout | server/__tests__/mcp-sdk-client.test.js > MCP SDK Client > callYouTubeTranscript > calls get_transcript tool with URL
+[MCP-SDK] Calling youtube-transcript for: https://youtube.com/watch?v=abc123
+
+stdout | server/__tests__/mcp-sdk-client.test.js > MCP SDK Client > callYouTubeTranscript > extracts text from response
+[MCP-SDK] Calling youtube-transcript for: https://youtube.com/watch?v=test
+
+stdout | server/__tests__/mcp-sdk-client.test.js > MCP SDK Client > callYouTubeTranscript > returns null when no text in response
+[MCP-SDK] Calling youtube-transcript for: https://youtube.com/watch?v=test
+
+stderr | server/__tests__/mcp-sdk-client.test.js > MCP SDK Client > callYouTubeTranscript > returns null when no text in response
+[MCP-SDK] No transcript in response
+
+stdout | server/__tests__/mcp-sdk-client.test.js > MCP SDK Client > callYouTubeTranscript > throws on API errors
+[MCP-SDK] Calling youtube-transcript for: https://youtube.com/watch?v=test
+
+stderr | server/__tests__/mcp-sdk-client.test.js > MCP SDK Client > callYouTubeTranscript > throws on API errors
+[MCP-SDK] YouTube transcript failed: API error
+
+stdout | server/__tests__/mcp-sdk-client.test.js > MCP SDK Client > callYouTubeTranscript > uses correct docker config for youtube-transcript
+[MCP-SDK] Calling youtube-transcript for: https://youtube.com/watch?v=test
+
+stderr | server/__tests__/obsidian.test.js > Obsidian Service > syncAll > adds delay between exports
+[Obsidian] MCP search failed: Cannot read properties of undefined (reading 'callTool')
+[Obsidian] MCP search failed: Cannot read properties of undefined (reading 'callTool')
+[Obsidian] MCP search failed: Cannot read properties of undefined (reading 'callTool')
+
+stderr | server/__tests__/obsidian.test.js > Obsidian Service > generateStudyNotes > returns null for null transcript
+[Obsidian] ANTHROPIC_API_KEY not set, skipping study notes generation
+
+stderr | server/__tests__/obsidian.test.js > Obsidian Service > generateStudyNotes > returns null for short transcripts
+[Obsidian] ANTHROPIC_API_KEY not set, skipping study notes generation
+
+stderr | server/__tests__/obsidian.test.js > Obsidian Service > generateStudyNotes > returns null for undefined transcript
+[Obsidian] ANTHROPIC_API_KEY not set, skipping study notes generation
+
+stderr | server/__tests__/obsidian.test.js > Obsidian Service > generateStudyNotes > returns null for empty string transcript
+[Obsidian] ANTHROPIC_API_KEY not set, skipping study notes generation
+
+stderr | server/__tests__/obsidian.test.js > Obsidian Service > generateStudyNotes > returns null when transcript is less than 100 characters
+[Obsidian] ANTHROPIC_API_KEY not set, skipping study notes generation
+
+ ✓ server/__tests__/mcp-sdk-client.test.js (17 tests) 25ms
+ ✓ server/__tests__/obsidian.test.js (45 tests) 50ms
+stderr | server/__tests__/mcp-client.test.js > MCP Client > MCPClient > request > rejects on non-zero exit code without result
+MCP stderr: Error occurred
+
+ ✓ server/__tests__/mcp-client.test.js (29 tests) 51ms
+stdout | server/__tests__/youtube.test.js > YouTube Service > enrichYouTubeUrl > handles partial failures gracefully
+[YouTube] Fetching transcript for: https://youtube.com/watch?v=abc123
+
+stderr | server/__tests__/youtube.test.js > YouTube Service > enrichYouTubeUrl > handles partial failures gracefully
+[YouTube] Transcript fetch failed: Transcript unavailable
+
+stdout | server/__tests__/youtube.test.js > YouTube Service > enrichYouTubeUrl > provides fallback title when metadata fails
+[YouTube] Fetching transcript for: https://youtube.com/watch?v=xyz789
+
+stderr | server/__tests__/youtube.test.js > YouTube Service > enrichYouTubeUrl > provides fallback title when metadata fails
+oEmbed failed with status 404
+
+stderr | server/__tests__/youtube.test.js > YouTube Service > getVideoMetrics > returns null when MCP call fails
+[YouTube] Failed to get video metrics: API error
+
+ ✓ server/__tests__/youtube.test.js (27 tests) 72ms
+stdout | server/__tests__/article.test.js > Article Service > enrichArticleUrl > returns properly shaped result object
+[Article] Enriching: https://example.com/sample-article
+
+stdout | server/__tests__/article.test.js > Article Service > enrichArticleUrl > handles fetch errors gracefully
+[Article] Enriching: https://example.com/article
+
+stderr | server/__tests__/article.test.js > Article Service > enrichArticleUrl > handles fetch errors gracefully
+[Article] Enrichment failed: Network error
+
+stdout | server/__tests__/article.test.js > Article Service > enrichArticleUrl > handles extraction failures gracefully
+[Article] Enriching: https://example.com/empty
+
+stdout | server/__tests__/article.test.js > Article Service > enrichArticleUrl > enrichment completes within reasonable time
+[Article] Enriching: https://example.com/article
+
+ ✓ server/__tests__/article.test.js (29 tests) 275ms
+
+ Test Files  7 passed (7)
+      Tests  209 passed (209)
+   Start at  14:22:37
+   Duration  1.14s (transform 574ms, setup 0ms, collect 1.50s, tests 502ms, environment 2ms, prepare 886ms)
+

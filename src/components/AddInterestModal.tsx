@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
-import { X, Loader2, Sparkles, CheckCircle, AlertCircle } from 'lucide-react';
-import type { EnrichedCreateInput, SourceType, ItemStatus } from '../types';
+import { X, Loader2, Sparkles, CheckCircle, AlertCircle, Clock, FileText } from 'lucide-react';
+import type { EnrichedCreateInput, SourceType, ItemStatus, SeriesInfo } from '../types';
 import { detectSourceType } from '../types';
-import { enrichUrl, isYouTubeUrl, isGitHubUrl } from '../services/enrich';
+import { enrichUrl, isYouTubeUrl, isGitHubUrl, isArticleUrl } from '../services/enrich';
 import { GitHubPreview } from './GitHubPreview';
 
 interface AddInterestModalProps {
@@ -37,6 +37,16 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
   const [error, setError] = useState<string | null>(null);
   const [enrichStatus, setEnrichStatus] = useState<EnrichStatus>('idle');
   const [enrichMessage, setEnrichMessage] = useState<string | null>(null);
+  // Article-specific state
+  const [articleContent, setArticleContent] = useState<string | null>(null);
+  const [excerpt, setExcerpt] = useState<string | null>(null);
+  const [wordCount, setWordCount] = useState<number | null>(null);
+  const [readingTime, setReadingTime] = useState<number | null>(null);
+  const [siteName, setSiteName] = useState<string | null>(null);
+  const [publishedDate, setPublishedDate] = useState<string | null>(null);
+  const [isDocumentation, setIsDocumentation] = useState(false);
+  const [seriesInfo, setSeriesInfo] = useState<SeriesInfo | null>(null);
+  const [truncated, setTruncated] = useState(false);
 
   // GitHub-specific state
   const [stars, setStars] = useState<number | undefined>(undefined);
@@ -64,6 +74,16 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
     setLanguage(null);
     setTopics([]);
     setReadme(null);
+    // Reset article-specific state
+    setArticleContent(null);
+    setExcerpt(null);
+    setWordCount(null);
+    setReadingTime(null);
+    setSiteName(null);
+    setPublishedDate(null);
+    setIsDocumentation(false);
+    setSeriesInfo(null);
+    setTruncated(false);
   }, []);
 
   const handleUrlChange = async (newUrl: string) => {
@@ -112,7 +132,7 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
     }
 
     // Auto-enrich GitHub URLs
-    if (isGitHubUrl(newUrl)) {
+    else if (isGitHubUrl(newUrl)) {
       setEnrichStatus('loading');
       setEnrichMessage('Fetching repository info...');
 
@@ -151,6 +171,50 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
         setEnrichMessage(err instanceof Error ? err.message : 'Enrichment failed');
       }
     }
+
+    // Auto-enrich article URLs
+    else if (isArticleUrl(newUrl) && newUrl.length > 10) {
+      setEnrichStatus('loading');
+      setEnrichMessage('Extracting content...');
+
+      try {
+        const result = await enrichUrl(newUrl);
+
+        if (result.success && result.data) {
+          setTitle(result.data.title || '');
+          setAuthor(result.data.author || '');
+          setThumbnail(result.data.thumbnail || null);
+          setSiteName(result.data.siteName || null);
+          setPublishedDate(result.data.publishedDate || null);
+
+          if (result.data.articleContent) {
+            setArticleContent(result.data.articleContent);
+            setExcerpt(result.data.excerpt || null);
+            setWordCount(result.data.wordCount || null);
+            setReadingTime(result.data.readingTime || null);
+            setIsDocumentation(result.data.isDocumentation || false);
+            setSeriesInfo(result.data.seriesInfo || null);
+            setTruncated(result.data.truncated || false);
+
+            const readingInfo = result.data.readingTime ? ` (${result.data.readingTime} min read)` : '';
+            setEnrichStatus('success');
+            setEnrichMessage(`Article extracted${readingInfo}`);
+          } else if (result.data.articleError) {
+            setEnrichStatus('error');
+            setEnrichMessage(result.data.articleError);
+          } else {
+            setEnrichStatus('success');
+            setEnrichMessage('Article metadata loaded (content not available)');
+          }
+        } else {
+          setEnrichStatus('error');
+          setEnrichMessage(result.error || 'Failed to extract article');
+        }
+      } catch (err) {
+        setEnrichStatus('error');
+        setEnrichMessage(err instanceof Error ? err.message : 'Extraction failed');
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -171,7 +235,7 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
         type,
         status,
         tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
-        // Include enriched data
+        // Include YouTube enriched data
         transcript: transcript || undefined,
         thumbnail: thumbnail || undefined,
         author: author || undefined,
@@ -181,6 +245,16 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
         language: language || undefined,
         topics: topics.length > 0 ? topics : undefined,
         hasReadme: readme !== null,
+        // Include article enriched data
+        articleContent: articleContent || undefined,
+        excerpt: excerpt || undefined,
+        wordCount: wordCount || undefined,
+        readingTime: readingTime || undefined,
+        siteName: siteName || undefined,
+        publishedDate: publishedDate || undefined,
+        isDocumentation: isDocumentation || undefined,
+        seriesInfo: seriesInfo || undefined,
+        truncated: truncated || undefined,
       };
 
       await onAdd(input);
@@ -233,7 +307,7 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
               required
             />
             <p className="text-xs text-gray-500 mt-1">
-              Paste a YouTube or GitHub URL to auto-fetch metadata
+              Paste a YouTube, GitHub, or article URL to auto-fetch metadata
             </p>
 
             {/* Enrich status indicator */}
@@ -335,10 +409,38 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Auto-filled for YouTube videos"
+              placeholder="Auto-filled from URL content"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
             />
           </div>
+
+          {/* Article metadata row */}
+          {(siteName || wordCount) && (
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              {siteName && (
+                <span className="flex items-center gap-1">
+                  <FileText className="w-4 h-4" />
+                  {siteName}
+                </span>
+              )}
+              {readingTime && (
+                <span className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  {readingTime} min read
+                </span>
+              )}
+              {wordCount && (
+                <span className="text-gray-400">
+                  {wordCount.toLocaleString()} words
+                </span>
+              )}
+              {isDocumentation && (
+                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">
+                  Documentation
+                </span>
+              )}
+            </div>
+          )}
 
           {author && (
             <div>
@@ -395,6 +497,25 @@ export function AddInterestModal({ isOpen, onClose, onAdd }: AddInterestModalPro
               <p className="text-xs text-gray-400 mt-1">
                 {transcript.length.toLocaleString()} characters
               </p>
+            </div>
+          )}
+
+          {/* Article excerpt preview */}
+          {excerpt && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Article Excerpt <span className="text-green-600 text-xs">(auto-extracted)</span>
+              </label>
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <p className="text-sm text-gray-600 line-clamp-4">
+                  {excerpt}
+                </p>
+              </div>
+              {truncated && (
+                <p className="text-xs text-amber-600 mt-1">
+                  Content was truncated (original exceeds 100KB)
+                </p>
+              )}
             </div>
           )}
 

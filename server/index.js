@@ -24,12 +24,23 @@ import {
   updateNoteFrontmatter,
   syncAllToObsidian,
 } from './services/index.js';
+import {
+  isBraveSearchAvailable,
+  webSearch,
+  newsSearch,
+  videoSearch,
+  relatedSearch,
+  isArticleUrl,
+  enrichArticleUrl,
+  generateArticleSummary,
+} from './services/index.js';
 
 const require = createRequire(import.meta.url);
 const jsonServer = require('json-server');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TRANSCRIPTS_DIR = path.join(__dirname, '..', 'data', 'transcripts');
+const ARTICLES_DIR = path.join(__dirname, '..', 'data', 'articles');
 
 const app = express();
 const PORT = 3001;
@@ -72,12 +83,46 @@ async function writeTranscript(itemId, content) {
 }
 
 // ============================================================================
+// Article File Storage
+// ============================================================================
+
+async function ensureArticlesDir() {
+  if (!existsSync(ARTICLES_DIR)) {
+    await mkdir(ARTICLES_DIR, { recursive: true });
+  }
+}
+
+function getArticlePath(itemId) {
+  return path.join(ARTICLES_DIR, `${itemId}.txt`);
+}
+
+async function readArticleContent(itemId) {
+  const filePath = getArticlePath(itemId);
+  if (!existsSync(filePath)) {
+    return null;
+  }
+  try {
+    return await readFile(filePath, 'utf-8');
+  } catch (err) {
+    console.error(`Failed to read article for ${itemId}:`, err);
+    return null;
+  }
+}
+
+async function writeArticleContent(itemId, content) {
+  await ensureArticlesDir();
+  const filePath = getArticlePath(itemId);
+  await writeFile(filePath, content, 'utf-8');
+  console.log(`Article content saved: ${filePath}`);
+}
+
+// ============================================================================
 // API Routes
 // ============================================================================
 
 /**
  * POST /api/enrich
- * Enrich a URL with metadata and transcript (for YouTube)
+ * Enrich a URL with metadata and content (for YouTube and articles)
  */
 app.post('/api/enrich', async (req, res) => {
   const { url } = req.body;
@@ -106,6 +151,17 @@ app.post('/api/enrich', async (req, res) => {
         title: result.data?.title,
         stars: result.data?.stars,
         hasReadme: result.data?.hasReadme,
+      });
+      return res.json(result);
+    }
+
+    // Check if it's an article URL
+    if (isArticleUrl(url)) {
+      const result = await enrichArticleUrl(url);
+      console.log(`[Enrich] Article enrichment complete:`, {
+        title: result.data?.title,
+        hasArticleContent: result.data?.hasArticleContent,
+        wordCount: result.data?.wordCount,
       });
       return res.json(result);
     }
@@ -227,6 +283,85 @@ app.post('/api/transcripts/:id', async (req, res) => {
 });
 
 // ============================================================================
+// Article Content Routes
+// ============================================================================
+
+/**
+ * GET /api/articles/:id
+ * Retrieve article content for an item
+ */
+app.get('/api/articles/:id', async (req, res) => {
+  const { id } = req.params;
+  const content = await readArticleContent(id);
+
+  if (content === null) {
+    return res.status(404).json({
+      id,
+      error: 'Article content not found',
+      content: null,
+    });
+  }
+
+  res.json({ id, content });
+});
+
+/**
+ * PUT /api/articles/:id
+ * Save article content for an item
+ */
+app.put('/api/articles/:id', async (req, res) => {
+  const { id } = req.params;
+  const { content } = req.body;
+
+  if (!content) {
+    return res.status(400).json({ error: 'Article content is required' });
+  }
+
+  try {
+    await writeArticleContent(id, content);
+    res.json({ id, success: true });
+  } catch (err) {
+    console.error('Failed to save article content:', err);
+    res.status(500).json({ error: 'Failed to save article content' });
+  }
+});
+
+/**
+ * POST /api/articles/:id/summary
+ * Generate AI summary for an article
+ */
+app.post('/api/articles/:id/summary', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Get article content
+    const content = await readArticleContent(id);
+
+    if (!content) {
+      return res.status(404).json({ error: 'Article content not found' });
+    }
+
+    // Get item title from database
+    const dbPath = path.join(__dirname, '..', 'db.json');
+    const db = JSON.parse(await readFile(dbPath, 'utf-8'));
+    const item = db.interests?.find(i => i.id === id);
+    const title = item?.title || 'Article';
+
+    // Generate summary
+    const summary = await generateArticleSummary(content, title);
+
+    if (!summary) {
+      return res.status(500).json({ error: 'Failed to generate summary. Check API key configuration.' });
+    }
+
+    res.json({ id, summary });
+  } catch (err) {
+    console.error('Failed to generate article summary:', err);
+    res.status(500).json({ error: 'Failed to generate summary' });
+  }
+});
+
+// ============================================================================
 // Obsidian Integration Routes
 // ============================================================================
 
@@ -340,6 +475,128 @@ app.post('/api/sync-obsidian', async (req, res) => {
     console.error('[Obsidian] Sync failed:', err);
     res.write(`data: ${JSON.stringify({ type: 'error', error: err.message })}\n\n`);
     res.end();
+  }
+});
+
+// ============================================================================
+// Brave Search Integration Routes
+// ============================================================================
+
+/**
+ * GET /api/search/status
+ * Check if Brave Search is available (API key configured)
+ */
+app.get('/api/search/status', (req, res) => {
+  const available = isBraveSearchAvailable();
+  res.json({
+    available,
+    error: available ? undefined : 'BRAVE_API_KEY not configured',
+  });
+});
+
+/**
+ * POST /api/search
+ * Perform web, news, or video search
+ */
+app.post('/api/search', async (req, res) => {
+  const { query, type = 'web', freshness, count = 10, summary = false } = req.body;
+
+  if (!query) {
+    return res.status(400).json({
+      success: false,
+      error: 'Query is required',
+      results: [],
+    });
+  }
+
+  // Truncate query to 400 characters
+  const truncatedQuery = query.slice(0, 400);
+  const wasTruncated = query.length > 400;
+
+  if (!isBraveSearchAvailable()) {
+    return res.status(503).json({
+      success: false,
+      error: 'Brave Search not available - BRAVE_API_KEY not configured',
+      results: [],
+    });
+  }
+
+  console.log(`[Search] ${type} search: "${truncatedQuery}"`);
+
+  try {
+    let result;
+
+    switch (type) {
+      case 'news':
+        result = await newsSearch(truncatedQuery, { freshness, count });
+        break;
+      case 'video':
+        result = await videoSearch(truncatedQuery, { freshness, count });
+        break;
+      case 'web':
+      default:
+        result = await webSearch(truncatedQuery, { freshness, count, summary });
+        break;
+    }
+
+    // Add truncation warning if applicable
+    if (wasTruncated) {
+      result.warning = 'Query was truncated to 400 characters';
+    }
+
+    res.json(result);
+  } catch (err) {
+    console.error('[Search] Failed:', err);
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      results: [],
+    });
+  }
+});
+
+/**
+ * POST /api/search/related/:id
+ * Find content related to an existing interest
+ */
+app.post('/api/search/related/:id', async (req, res) => {
+  const { id } = req.params;
+  const { count = 10, freshness } = req.body || {};
+
+  if (!isBraveSearchAvailable()) {
+    return res.status(503).json({
+      success: false,
+      error: 'Brave Search not available - BRAVE_API_KEY not configured',
+      results: [],
+    });
+  }
+
+  try {
+    // Get interest from database
+    const dbPath = path.join(__dirname, '..', 'db.json');
+    const db = JSON.parse(await readFile(dbPath, 'utf-8'));
+    const item = db.interests?.find((i) => i.id === id);
+
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        error: 'Interest not found',
+        results: [],
+      });
+    }
+
+    console.log(`[Search] Related search for: "${item.title}"`);
+
+    const result = await relatedSearch(item, { count, freshness });
+
+    res.json(result);
+  } catch (err) {
+    console.error('[Search] Related search failed:', err);
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      results: [],
+    });
   }
 });
 

@@ -1,11 +1,11 @@
 ---
 # Hackshop_Agentic_Dev_Tools-17i8
 title: 'F004: Article/Web Page Enrichment - Extract and summarize articles'
-status: todo
+status: completed
 type: feature
 priority: high
 created_at: 2026-01-17T21:15:24Z
-updated_at: 2026-01-17T21:15:24Z
+updated_at: 2026-01-17T23:37:15Z
 ---
 
 Automatically extract and enrich content from articles, blog posts, and documentation pages.

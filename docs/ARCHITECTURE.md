@@ -95,13 +95,22 @@ This project is a **learning exercise** that showcases:
 
 ```
 war-goat/
-├── docs/                          # Documentation (you are here!)
+├── docs/                          # Documentation
 │   ├── ARCHITECTURE.md           # This file - system overview
-│   ├── MCP-INTEGRATION.md        # MCP protocol details
-│   ├── MCP-BEST-PRACTICES.md     # Implementation approaches
+│   ├── DEVELOPMENT.md            # Development guide
+│   ├── GETTING-STARTED.md        # Setup guide
 │   ├── API-REFERENCE.md          # REST API documentation
 │   ├── DATA-FLOW.md              # Data flow diagrams
-│   └── GETTING-STARTED.md        # Setup guide
+│   ├── MCP-INTEGRATION.md        # MCP protocol details
+│   ├── MCP-BEST-PRACTICES.md     # Implementation approaches
+│   ├── MULTI-AGENT-WORKFLOW.md   # Multi-agent workflow system
+│   ├── github-merge-guards.md    # GitHub branch protection settings
+│   ├── merge-session.md          # PR merge session guide
+│   ├── architecture/             # Architecture documents
+│   │   └── decisions/            # ADRs (Architecture Decision Records)
+│   ├── requirements/             # Requirements documents
+│   └── templates/                # Document templates
+│
 ├── src/                           # Frontend source code
 │   ├── components/                # React UI components
 │   │   ├── Header.tsx            # App header with logo
@@ -120,6 +129,7 @@ war-goat/
 │   │   └── index.ts              # All type definitions
 │   ├── App.tsx                    # Main React component
 │   └── main.tsx                   # Entry point
+│
 ├── server/                        # Backend source code
 │   ├── index.js                   # Express server
 │   └── services/                  # Backend services
@@ -127,21 +137,63 @@ war-goat/
 │       ├── mcp-client.js         # Manual MCP client (educational)
 │       ├── mcp-sdk-client.js     # Official SDK client (production)
 │       └── youtube.js            # YouTube service layer
-├── scripts/                       # Utility scripts
-│   └── batch_import.py           # Python batch import tool
+│
+├── scripts/                       # Utility and workflow scripts
+│   ├── agent-runner.sh           # Multi-agent workflow orchestrator
+│   ├── start-workflow.sh         # Start a new workflow session
+│   ├── workflow.sh               # Workflow utilities
+│   ├── workflow-monitor.sh       # Tmux-based workflow monitor
+│   ├── workflow-summary.py       # Generate workflow status summary
+│   ├── capture-evidence.py       # Capture test evidence
+│   ├── detect-overlap.py         # Detect file conflicts between workflows
+│   ├── batch_import.py           # Python batch import tool
+│   └── workflow/                  # Workflow-specific scripts
+│       └── merge_all_prs.py      # Safe PR merge script
+│
 ├── .claude/                       # Claude Code configuration
-│   └── commands/                  # Custom skills
-│       ├── add-video.md          # AI-enhanced video adding
-│       └── import-channel.md     # Batch channel import
+│   ├── commands/                  # Custom slash commands
+│   │   ├── README.md             # Command documentation
+│   │   ├── feature.md            # Feature planning (TDD)
+│   │   ├── bug.md                # Bug planning (TDD)
+│   │   ├── chore.md              # Chore planning (TDD)
+│   │   ├── implement.md          # Execute a plan
+│   │   ├── commit.md             # Commit workflow
+│   │   ├── review.md             # Code review
+│   │   ├── test.md               # Run tests
+│   │   ├── test-gen.md           # Generate tests
+│   │   ├── start-workflow.md     # Start multi-agent workflow
+│   │   ├── merge-prs.md          # Merge workflow PRs
+│   │   ├── workflow-*.md         # Workflow stage commands
+│   │   └── ...                   # Other commands
+│   └── settings.json             # Claude Code settings
+│
+├── .github/                       # GitHub configuration
+│   ├── CODEOWNERS                # Code ownership rules
+│   └── pull_request_template.md  # PR template
+│
 ├── mcp-servers/                   # MCP server implementations
 │   └── youtube-content-management-mcp/
 │       ├── main.py               # Entry point
 │       ├── server.py             # FastMCP server
 │       └── tools/                # MCP tool implementations
+│
+├── workflow/                      # Workflow artifacts (gitignored)
+│   ├── {WORK_ITEM_ID}/           # Per-work-item artifacts
+│   │   ├── 1-requirements.md
+│   │   ├── 2-architecture.md
+│   │   ├── 3-implementation.md
+│   │   ├── 4-qa-report.md
+│   │   └── 5-integration-gate.md
+│   └── _reports/                  # Merge session reports
+│
+├── specs/                         # Plan files from /feature, /bug, /chore
+│
 ├── data/                          # Runtime data
 │   └── transcripts/              # Stored transcript files
+│
 ├── public/                        # Static assets
 │   └── war-goat-logo.png         # App logo
+│
 ├── db.json                        # JSON Server database
 ├── .mcp.json                      # MCP server configuration
 ├── vite.config.ts                 # Vite configuration
@@ -238,17 +290,40 @@ See [GETTING-STARTED.md](./GETTING-STARTED.md) for detailed setup instructions.
 
 ## Related Documentation
 
-- [MCP-INTEGRATION.md](./MCP-INTEGRATION.md) - How MCP servers work
-- [MCP-BEST-PRACTICES.md](./MCP-BEST-PRACTICES.md) - Implementation approaches & Python vs JS
+### Core Documentation
+- [GETTING-STARTED.md](./GETTING-STARTED.md) - Setup and running guide
+- [DEVELOPMENT.md](./DEVELOPMENT.md) - Development workflows and practices
 - [API-REFERENCE.md](./API-REFERENCE.md) - All API endpoints
 - [DATA-FLOW.md](./DATA-FLOW.md) - Complete data flow diagrams
-- [GETTING-STARTED.md](./GETTING-STARTED.md) - Setup and running guide
 
-## Claude Code Skills
+### MCP Integration
+- [MCP-INTEGRATION.md](./MCP-INTEGRATION.md) - How MCP servers work
+- [MCP-BEST-PRACTICES.md](./MCP-BEST-PRACTICES.md) - Implementation approaches & Python vs JS
 
-The project includes custom skills (commands) for Claude Code:
+### Multi-Agent Workflow System
+- [MULTI-AGENT-WORKFLOW.md](./MULTI-AGENT-WORKFLOW.md) - Complete workflow documentation
+- [github-merge-guards.md](./github-merge-guards.md) - Branch protection settings
+- [merge-session.md](./merge-session.md) - Safe PR merging guide
 
+### Architecture Decisions
+- [ADR Index](./architecture/decisions/README.md) - Architecture Decision Records
+
+## Claude Code Commands
+
+The project includes custom slash commands for Claude Code. Key commands:
+
+### Development
+- `/feature <description>` - Plan a new feature (TDD approach)
+- `/bug <description>` - Plan a bug fix
+- `/implement specs/<plan>.md` - Execute a plan
+- `/commit` - Test, commit, push, create PR
+
+### Content Management
 - `/add-video <url>` - Add a YouTube video with AI-enhanced summary and tagging
 - `/import-channel <name>` - Batch import videos from a YouTube channel
 
-See `.claude/commands/` for skill definitions.
+### Multi-Agent Workflow
+- `/start-workflow <ID> <type> "<title>"` - Start parallel workflow session
+- `/merge-prs` - Safely merge completed workflow PRs
+
+See [Claude Commands README](../.claude/commands/README.md) for complete documentation.

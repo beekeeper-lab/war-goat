@@ -1,0 +1,13 @@
+Branch chore/T001 is at same commit as origin/main
+Uncommitted changes in working tree:
+ M package-lock.json
+ M package.json
+?? docs/requirements/T001-requirements.md
+?? server/__tests__/api-handlers.test.js
+?? server/__tests__/mcp-client.test.js
+?? server/__tests__/mcp-sdk-client.test.js
+?? server/__tests__/obsidian.test.js
+?? server/__tests__/youtube.test.js
+?? specs/T001-spec.md
+?? workflow/T001/
+No rebase needed - branch is up to date with origin/main

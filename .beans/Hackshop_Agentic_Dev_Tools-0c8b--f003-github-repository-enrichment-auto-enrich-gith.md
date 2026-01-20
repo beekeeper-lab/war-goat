@@ -1,11 +1,11 @@
 ---
 # Hackshop_Agentic_Dev_Tools-0c8b
 title: 'F003: GitHub Repository Enrichment - Auto-enrich GitHub URLs'
-status: todo
+status: in-progress
 type: feature
 priority: high
 created_at: 2026-01-17T21:15:23Z
-updated_at: 2026-01-17T21:15:23Z
+updated_at: 2026-01-17T22:10:48Z
 ---
 
 Automatically enrich GitHub repository URLs with metadata, README content, and repository insights.
