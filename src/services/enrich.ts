@@ -39,6 +39,11 @@ export function isYouTubeUrl(url: string): boolean {
   return /youtube\.com|youtu\.be/.test(url);
 }
 
+// Check if URL is a GitHub repository URL
+export function isGitHubUrl(url: string): boolean {
+  return /github\.com\/[\w-]+\/[\w.-]+/.test(url);
+}
+
 // Check if URL is an article URL (http(s) URLs not matching other patterns)
 export function isArticleUrl(url: string): boolean {
   if (!url) return false;

@@ -47,19 +47,30 @@ export interface InterestItem {
   // Article specific
   siteName?: string;
   publishedDate?: string;
-  articleContent?: string;      // Stored separately in data/articles/{id}.txt
-  hasArticleContent?: boolean;  // Flag for lazy loading
-  articleError?: string;        // Extraction failure reason
-  excerpt?: string;             // First ~200 chars for preview
-  wordCount?: number;           // Total word count
-  readingTime?: number;         // Estimated minutes (words / 200)
-  isDocumentation?: boolean;    // Documentation site flag
-  truncated?: boolean;          // Content was truncated
-  seriesInfo?: SeriesInfo;      // Series detection result
+  articleContent?: string;
+  hasArticleContent?: boolean;
+  articleError?: string;
+  excerpt?: string;
+  wordCount?: number;
+  readingTime?: number;
+  isDocumentation?: boolean;
+  truncated?: boolean;
+  seriesInfo?: SeriesInfo;
 
   // GitHub specific
   stars?: number;
   language?: string;
+  forks?: number;
+  topics?: string[];
+  license?: string;
+  lastCommitDate?: string;
+  hasReadme?: boolean;
+  readme?: string;
+  readmeError?: string;
+  ownerAvatar?: string;
+  openIssues?: number;
+  defaultBranch?: string;
+  fullName?: string;
 
   // Obsidian integration
   obsidianPath?: string;
@@ -92,6 +103,18 @@ export interface EnrichedCreateInput extends CreateInterestInput {
   isDocumentation?: boolean;
   seriesInfo?: SeriesInfo;
   truncated?: boolean;
+  // GitHub specific
+  stars?: number;
+  forks?: number;
+  language?: string;
+  topics?: string[];
+  license?: string;
+  ownerAvatar?: string;
+  hasReadme?: boolean;
+  lastCommitDate?: string;
+  openIssues?: number;
+  defaultBranch?: string;
+  fullName?: string;
 }
 
 export interface UpdateInterestInput {
@@ -100,12 +123,10 @@ export interface UpdateInterestInput {
   status?: ItemStatus;
   tags?: string[];
   notes?: string;
-  // Obsidian sync tracking
   obsidianPath?: string;
   obsidianSyncedAt?: string;
 }
 
-// URL detection patterns
 export const URL_PATTERNS: Record<SourceType, RegExp[]> = {
   youtube: [
     /youtube\.com\/watch/,
@@ -121,7 +142,7 @@ export const URL_PATTERNS: Record<SourceType, RegExp[]> = {
     /audible\.com/,
     /libro\.fm/,
   ],
-  article: [], // Fallback for most URLs
+  article: [],
   podcast: [
     /spotify\.com.*episode/,
     /podcasts\.apple\.com/,
@@ -143,17 +164,13 @@ export function detectSourceType(url: string): SourceType {
       }
     }
   }
-  // Default to article for http(s) URLs, other for everything else
   if (/^https?:\/\//.test(url)) {
     return 'article';
   }
   return 'other';
 }
 
-// ============================================================================
 // Obsidian Integration Types
-// ============================================================================
-
 export interface ObsidianSettings {
   enabled: boolean;
   defaultFolder: string;
@@ -205,13 +222,7 @@ export interface StudyNotes {
   actionItems: string[];
 }
 
-// ============================================================================
 // Brave Search Integration Types
-// ============================================================================
-
-/**
- * Search result from Brave Search API
- */
 export interface SearchResult {
   title: string;
   url: string;
@@ -220,26 +231,18 @@ export interface SearchResult {
   publishedDate?: string;
   source: string;
   type: 'web' | 'news' | 'video';
-  // Video-specific
   duration?: string;
-  // News-specific
   age?: string;
 }
 
-/**
- * Search request options
- */
 export interface SearchOptions {
   query: string;
   type?: 'web' | 'news' | 'video';
-  freshness?: 'pd' | 'pw' | 'pm' | 'py'; // past day/week/month/year
+  freshness?: 'pd' | 'pw' | 'pm' | 'py';
   count?: number;
   summary?: boolean;
 }
 
-/**
- * Search response from the API
- */
 export interface SearchResponse {
   success: boolean;
   results: SearchResult[];
@@ -249,17 +252,18 @@ export interface SearchResponse {
   error?: string;
 }
 
-/**
- * Related search response (includes the generated query)
- */
 export interface RelatedSearchResponse extends SearchResponse {
   generatedQuery: string;
 }
 
-/**
- * Brave Search service status
- */
 export interface BraveSearchStatus {
   available: boolean;
   error?: string;
+}
+
+// Article Summary Types
+export interface ArticleSummary {
+  summary: string;
+  keyPoints: string[];
+  suggestedTags: string[];
 }
