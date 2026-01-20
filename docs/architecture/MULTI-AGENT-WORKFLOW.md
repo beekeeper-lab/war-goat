@@ -37,13 +37,15 @@ The multi-agent workflow system splits development work across four specialized 
 
 | Benefit | Description |
 |---------|-------------|
+| **TDD Throughout** | Test-Driven Development from requirements through QA |
 | **Parallel Work** | Run multiple workflows simultaneously in isolated git worktrees |
 | **Specialization** | Each agent focuses on one aspect of development |
 | **Quality Gates** | Each stage produces documented deliverables before proceeding |
 | **Traceability** | Clear documentation traces requirements → design → code → verification |
+| **Test Impact Tracking** | Predict and verify test changes across the entire workflow |
 | **Isolation** | Git worktrees prevent conflicts between parallel workflows |
 | **Safety** | Hooks protect against dangerous operations |
-| **Visibility** | Track AI token usage per stage and workflow |
+| **Visibility** | Track AI token usage and timing per stage and workflow |
 
 ---
 
@@ -263,43 +265,67 @@ git worktree prune
 
 **Command**: `/workflow-requirements <ID>`
 
-**Purpose**: Understand the request, analyze impact, document requirements
+**Purpose**: Understand the request, analyze impact, analyze test impact, document requirements
 
 **Inputs**:
 - Work item ID and description (from Beans)
 - Existing requirements (if updating)
+- Existing test suite (runs tests to establish baseline)
 
 **Outputs**:
 - `docs/requirements/{ID}-requirements.md` (persistent)
 - `workflow/{ID}/1-requirements.md` (tracking)
+- `workflow/{ID}/test-impact-report.md` (test tracking - Section 1)
 
 **Deliverables**:
 - User stories with acceptance criteria
 - Functional requirements (FR-1, FR-2, ...)
 - Non-functional requirements
 - System impact analysis
+- **Test impact analysis** (which tests will break/change)
 - Open questions for Architecture
+
+**Checkpoints**:
+| Checkpoint | Criteria |
+|------------|----------|
+| `requirements_identified` | At least 3 functional requirements defined |
+| `impact_analyzed` | Components affected are identified with impact levels |
+| `test_impact_analyzed` | Existing tests run, impacted tests identified |
+| `acceptance_criteria_defined` | Each AC is specific, measurable, and testable |
+| `no_open_blockers` | No unanswered questions that block architecture |
 
 ### Stage 2: Architecture Agent
 
 **Command**: `/workflow-architecture <ID>`
 
-**Purpose**: Design the solution, make technical decisions, create implementation plan
+**Purpose**: Design the solution, make technical decisions, plan test architecture, create implementation plan
 
 **Inputs**:
 - Requirements from Stage 1
+- Test Impact Report from Stage 1
 - Existing codebase patterns
 
 **Outputs**:
 - `specs/{ID}-spec.md` (persistent - THE source for Implementor)
 - `workflow/{ID}/2-architecture.md` (tracking)
+- `workflow/{ID}/test-impact-report.md` (updated - Section 2)
 
 **Deliverables**:
 - Architecture Decision Records (ADRs)
 - Technical design (data models, APIs, components)
+- **Test architecture decisions** (tooling, structure, data strategy)
 - File change list with line numbers
 - Step-by-step tasks for Implementor
 - Test strategy (TDD approach)
+
+**Checkpoints**:
+| Checkpoint | Criteria |
+|------------|----------|
+| `requirements_addressed` | Every requirement has a design solution |
+| `design_complete` | Data models, APIs, and components fully specified |
+| `test_architecture_defined` | Test tooling and structure planned |
+| `tasks_defined` | Step-by-step tasks are clear and executable |
+| `tests_planned` | Test files and test cases specified for TDD |
 
 ### Stage 3: Implementation Agent
 
@@ -309,33 +335,48 @@ git worktree prune
 
 **Inputs**:
 - `specs/{ID}-spec.md` (PRIMARY input)
+- Test Impact Report (predicted test changes)
 - Architecture document from Stage 2
 
 **Outputs**:
 - `workflow/{ID}/3-implementation.md` (tracking)
+- `workflow/{ID}/test-impact-report.md` (updated - Section 3)
 - Actual code changes
 - Tests (unit, component, E2E)
 - Git commits
 
 **Approach**:
-1. **RED**: Write failing tests first
-2. **GREEN**: Implement code to pass tests
-3. **REFACTOR**: Clean up while keeping tests green
+1. **Run existing tests first** (establish baseline)
+2. **RED**: Write failing tests first
+3. **GREEN**: Implement code to pass tests
+4. **REFACTOR**: Clean up while keeping tests green
+5. **Track deviations** from predicted test changes
+
+**Checkpoints**:
+| Checkpoint | Criteria |
+|------------|----------|
+| `baseline_tests_run` | Existing tests run before changes, baseline captured |
+| `tests_written` | All tests from architecture spec implemented |
+| `code_complete` | All tasks from architecture spec implemented |
+| `tests_passing` | All unit and E2E tests pass (including pre-existing) |
+| `no_lint_errors` | Code passes linting with no errors |
 
 ### Stage 4: QA Agent
 
 **Command**: `/workflow-qa <ID>`
 
-**Purpose**: Verify implementation, fill test gaps, approve or reject
+**Purpose**: Verify implementation, verify test predictions, fill test gaps, approve or reject
 
 **Inputs**:
 - `docs/requirements/{ID}-requirements.md` (What was requested)
 - `specs/{ID}-spec.md` (What was designed)
 - `workflow/{ID}/3-implementation.md` (What was built)
+- `workflow/{ID}/test-impact-report.md` (Test predictions to verify)
 - Actual code and tests
 
 **Outputs**:
 - `workflow/{ID}/4-qa-report.md` (tracking)
+- `workflow/{ID}/test-impact-report.md` (finalized - Section 4)
 - Additional tests (gap filling)
 - Bug reports (if issues found)
 - Documentation updates
@@ -343,8 +384,18 @@ git worktree prune
 **Verification**:
 - All acceptance criteria met
 - All tests pass
+- **Test predictions verified** (accuracy documented)
 - No critical bugs
 - Documentation updated
+
+**Checkpoints**:
+| Checkpoint | Criteria |
+|------------|----------|
+| `criteria_verified` | All acceptance criteria verified |
+| `tests_passing` | All automated tests pass |
+| `test_predictions_verified` | Test Impact Report predictions reviewed |
+| `no_critical_bugs` | No critical/blocking bugs remain |
+| `docs_updated` | Documentation reflects implementation |
 
 **Verdict**: `APPROVED` or `REJECTED`
 
@@ -378,13 +429,28 @@ These documents track the progress of a specific workflow execution:
 workflow/
 ├── F001/
 │   ├── status.json           # Workflow state
-│   ├── usage.json            # AI token usage
+│   ├── usage.json            # AI token usage and timing
+│   ├── agent.log             # Agent activity log
+│   ├── test-impact-report.md # Test predictions and verification
 │   ├── 1-requirements.md     # Requirements stage output
 │   ├── 2-architecture.md     # Architecture stage output
 │   ├── 3-implementation.md   # Implementation stage output
 │   └── 4-qa-report.md        # QA stage output
 └── _archive/                 # Completed workflows
 ```
+
+### 3. Test Impact Report
+
+The Test Impact Report (`test-impact-report.md`) is a special artifact that flows through all stages:
+
+| Section | Stage | Content |
+|---------|-------|---------|
+| Section 1 | Requirements | Baseline test run, predicted test changes |
+| Section 2 | Architecture | Test tooling decisions, test structure plan |
+| Section 3 | Implementation | Actual test changes, deviations from plan |
+| Section 4 | QA | Prediction accuracy, lessons learned |
+
+This creates a feedback loop for improving test impact predictions over time.
 
 ### Document Flow
 
@@ -670,6 +736,40 @@ The real power of this system is running multiple workflows simultaneously.
 
 ### Monitoring Progress
 
+#### Real-Time Dashboard (Recommended)
+
+Run the workflow monitor in the main pane for a real-time dashboard:
+
+```bash
+./scripts/workflow-monitor.sh
+```
+
+This displays:
+- All active workflows with current stage
+- Progress bars (stages 1-4)
+- Elapsed time per workflow
+- Recent output captured from each pane
+- Alerts when a workflow needs input
+
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  WORKFLOW DASHBOARD                                      Refresh: 5s         ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  F005     [feature] My New Feature                                           ║
+║  [██████████░░░░░░░░░░] 2/4  architecture  Running: 12m 30s                  ║
+║  Recent output:                                                              ║
+║    > Analyzing component dependencies...                                     ║
+║    > Writing 2-architecture.md                                               ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  F006     [feature] Another Feature                                          ║
+║  [████░░░░░░░░░░░░░░░░] 1/4  requirements  Running: 5m 10s                   ║
+║  Recent output:                                                              ║
+║    > Running existing tests for baseline...                                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+```
+
+#### Quick Status Commands
+
 From the main pane:
 
 ```bash
@@ -681,6 +781,9 @@ beans list
 
 # See what stage is running
 ./scripts/workflow.sh next F001
+
+# Follow agent logs
+tail -f workflow/F001/agent.log
 ```
 
 ---
@@ -784,7 +887,9 @@ project/
 ├── scripts/
 │   ├── workflow.sh               # Workflow management
 │   ├── start-workflow.sh         # Launch workflow + agent
-│   ├── agent-runner.sh           # Run stages, auto-chain
+│   ├── agent-runner.sh           # Run stages, auto-chain, log output
+│   ├── workflow-monitor.sh       # Real-time dashboard
+│   ├── workflow-summary.py       # Display timing + token summary
 │   ├── track-usage.py            # Extract AI usage data
 │   └── query-usage.sh            # Query usage data
 │
@@ -792,6 +897,8 @@ project/
 │   ├── requirements/             # Persistent requirements
 │   │   ├── F001-requirements.md
 │   │   └── ...
+│   ├── templates/
+│   │   └── test-impact-report.md # Template for test tracking
 │   └── MULTI-AGENT-WORKFLOW.md   # This document
 │
 ├── specs/                        # Persistent technical specs
@@ -800,8 +907,10 @@ project/
 │
 ├── workflow/                     # Workflow tracking
 │   ├── F001/
-│   │   ├── status.json
-│   │   ├── usage.json
+│   │   ├── status.json           # Workflow state + pane ID
+│   │   ├── usage.json            # AI token usage + timing
+│   │   ├── agent.log             # Agent activity log
+│   │   ├── test-impact-report.md # Test predictions + verification
 │   │   ├── 1-requirements.md
 │   │   ├── 2-architecture.md
 │   │   ├── 3-implementation.md
@@ -826,17 +935,21 @@ project/
 
 The multi-agent workflow system provides:
 
-1. **Structured Development**: Four specialized agents handle requirements, architecture, implementation, and QA
-2. **Parallel Execution**: Git worktrees and tmux enable simultaneous workflows
-3. **Safety Guardrails**: Hooks prevent dangerous operations
-4. **Full Traceability**: Every decision documented from request to verification
-5. **Usage Insights**: Track AI token usage to optimize costs
-6. **Integration**: Works with Beans for issue tracking, GitHub for PRs
+1. **TDD Throughout**: Test-Driven Development from requirements analysis through QA verification
+2. **Test Impact Tracking**: Predict test changes in requirements, verify accuracy in QA
+3. **Structured Development**: Four specialized agents handle requirements, architecture, implementation, and QA
+4. **Parallel Execution**: Git worktrees and tmux enable simultaneous workflows
+5. **Real-Time Monitoring**: Dashboard shows all workflows, captures pane output, alerts on input needed
+6. **Safety Guardrails**: Hooks prevent dangerous operations
+7. **Full Traceability**: Every decision documented from request to verification
+8. **Usage Insights**: Track AI token usage and timing to optimize costs
+9. **Integration**: Works with Beans for issue tracking, GitHub for PRs
 
 Start with:
 ```bash
 ./tmux_claude.sh
 /start-workflow <bean-id>
+./scripts/workflow-monitor.sh  # In main pane for dashboard
 ```
 
 And let the agents work!

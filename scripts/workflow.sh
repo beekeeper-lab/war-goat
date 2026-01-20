@@ -93,6 +93,13 @@ create_workflow() {
       "completedAt": null,
       "agent": null,
       "output": "4-qa-report.md"
+    },
+    "integration-gate": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "agent": null,
+      "output": "5-integration-gate.md"
     }
   },
   "branch": "${TYPE}/${ID}",
@@ -155,7 +162,7 @@ show_status() {
     echo ""
     echo "Stages:"
 
-    for stage in requirements architecture implementation qa; do
+    for stage in requirements architecture implementation qa integration-gate; do
         local STATUS=$(jq -r ".stages.$stage.status" "$WORKFLOW_PATH/status.json")
         local ICON="⬜"
         if [[ "$STATUS" == "completed" ]]; then

@@ -26,13 +26,16 @@ The persistent spec is the PRIMARY deliverable. The Implementor Agent follows th
 1. **Check for Existing Spec** - Look in `specs/` for prior work on this feature
 2. **Verify Previous Stage** - Check requirements are complete and `handoff_ready: true`
 3. **Read Requirements** - Both `docs/requirements/` AND `workflow/{WORK_ITEM_ID}/1-requirements.md`
-4. **Analyze Current Architecture** - Understand how the system is built
-5. **Design the Solution** - Make architectural decisions
-6. **Plan the Implementation** - Break down into specific tasks with TDD
-7. **Create/Update Persistent Spec** - Write to `specs/{WORK_ITEM_ID}-spec.md`
-8. **Validate Your Output** - Verify all checkpoints pass
-9. **Retry if Needed** - Fix any validation failures (up to 3 attempts)
-10. **Document for Handoff** - Write workflow doc for tracking
+4. **Read Test Impact Report** - `workflow/{WORK_ITEM_ID}/test-impact-report.md`
+5. **Analyze Current Architecture** - Understand how the system is built
+6. **Design the Solution** - Make architectural decisions
+7. **Plan Test Architecture** - Decide on test tooling, structure, and strategy
+8. **Plan the Implementation** - Break down into specific tasks with TDD
+9. **Create/Update Persistent Spec** - Write to `specs/{WORK_ITEM_ID}-spec.md`
+10. **Update Test Impact Report** - Add Section 2 (Test Architecture Decisions)
+11. **Validate Your Output** - Verify all checkpoints pass
+12. **Retry if Needed** - Fix any validation failures (up to 3 attempts)
+13. **Document for Handoff** - Write workflow doc for tracking
 
 ## Validation Checkpoints
 
@@ -42,6 +45,7 @@ You MUST pass ALL checkpoints before handoff:
 |------------|----------|
 | `requirements_addressed` | Every requirement from Stage 1 has a design solution |
 | `design_complete` | Data models, APIs, and components are fully specified |
+| `test_architecture_defined` | Test tooling decisions made, test structure planned |
 | `tasks_defined` | Step-by-step tasks are clear and independently executable |
 | `tests_planned` | Test files and test cases are specified for TDD |
 
@@ -85,6 +89,9 @@ checkpoints:
     status: pass | fail
     message: ""
   - name: design_complete
+    status: pass | fail
+    message: ""
+  - name: test_architecture_defined
     status: pass | fail
     message: ""
   - name: tasks_defined
@@ -164,6 +171,34 @@ ComponentTree:
 // New services or modifications
 // Include function signatures and responsibilities
 ```
+
+## Test Architecture
+
+### Test Tooling Decisions
+| Need | Tool | Status | Notes |
+|------|------|--------|-------|
+| {testing need} | {tool} | Existing/New | {why this tool} |
+
+### New Test Infrastructure Needed
+- [ ] {new fixture/helper/config}
+- [ ] {shared test utilities}
+
+### Test Structure
+```
+tests/
+├── unit/
+│   └── {new test files}
+├── integration/
+│   └── {new test files}
+└── e2e/
+    └── {new test files}
+```
+
+### Test Data Strategy
+{How test data will be managed - factories, fixtures, mocks, etc.}
+
+### Test Impact Report Update
+See and update: `workflow/{WORK_ITEM_ID}/test-impact-report.md` Section 2
 
 ## File Changes
 
@@ -286,6 +321,12 @@ Before marking complete, verify:
 - [ ] API endpoints have request/response shapes
 - [ ] Component hierarchy is defined
 - [ ] No placeholder sections
+
+### Checkpoint: test_architecture_defined
+- [ ] Test tooling decisions are documented (existing tools confirmed or new tools identified)
+- [ ] Test structure is defined (where new tests will live)
+- [ ] Test data strategy is documented
+- [ ] Test Impact Report Section 2 is updated
 
 ### Checkpoint: tasks_defined
 - [ ] Each task has Files, Description, Verification

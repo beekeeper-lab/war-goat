@@ -135,9 +135,10 @@ if [ "$IN_TMUX" = true ]; then
     echo "║  • Stages auto-chain: req → arch → impl → qa → PR            ║"
     echo "╚══════════════════════════════════════════════════════════════╝"
     echo ""
-    echo "Monitor status:"
-    echo "  beans list"
-    echo "  ./scripts/workflow.sh status ${WORKFLOW_ID}"
+    echo "Monitor options:"
+    echo "  ${YELLOW}./scripts/workflow-monitor.sh${NC}  - Real-time dashboard (recommended)"
+    echo "  beans list                     - Quick status check"
+    echo "  tail -f workflow/${WORKFLOW_ID}/agent.log  - Follow logs"
     echo ""
 else
     # No tmux - run agent directly in current terminal

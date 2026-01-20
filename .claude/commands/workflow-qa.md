@@ -29,14 +29,17 @@ Your job: Verify Code matches Spec matches Requirements.
 2. **Read Requirements** - `docs/requirements/{WORK_ITEM_ID}-requirements.md` (User Stories + AC)
 3. **Read Spec** - `specs/{WORK_ITEM_ID}-spec.md` (Technical design from Architecture)
 4. **Read Implementation Report** - `workflow/{WORK_ITEM_ID}/3-implementation.md`
-5. **Verify Implementation** - Does code match spec? Does spec match requirements?
-6. **Run All Tests** - Ensure everything passes
-7. **Test Manually** - Use Playwright MCP to verify user flows against AC
-8. **Validate Your Output** - Verify all checkpoints pass
-9. **Retry if Needed** - Fix any validation failures (up to 3 attempts)
-10. **File Bugs** - If issues found, create bug work items via Beans
-11. **Fill Test Gaps** - Write any missing tests
-12. **Update Beans** - Mark issue as completed
+5. **Read Test Impact Report** - `workflow/{WORK_ITEM_ID}/test-impact-report.md`
+6. **Verify Implementation** - Does code match spec? Does spec match requirements?
+7. **Verify Test Predictions** - Were the predicted test changes accurate?
+8. **Run All Tests** - Ensure everything passes
+9. **Test Manually** - Use Playwright MCP to verify user flows against AC
+10. **Validate Your Output** - Verify all checkpoints pass
+11. **Retry if Needed** - Fix any validation failures (up to 3 attempts)
+12. **File Bugs** - If issues found, create bug work items via Beans
+13. **Fill Test Gaps** - Write any missing tests
+14. **Finalize Test Impact Report** - Add Section 4 (Test Verification)
+15. **Update Beans** - Mark issue as completed
 
 ## Validation Checkpoints
 
@@ -46,6 +49,7 @@ You MUST pass ALL checkpoints before marking complete:
 |------------|----------|
 | `criteria_verified` | All acceptance criteria from requirements are verified |
 | `tests_passing` | All automated tests pass |
+| `test_predictions_verified` | Test Impact Report predictions reviewed, accuracy documented |
 | `no_critical_bugs` | No critical/blocking bugs remain unfixed |
 | `docs_updated` | Documentation reflects the implementation |
 
@@ -97,6 +101,9 @@ checkpoints:
   - name: tests_passing
     status: pass | fail
     message: ""
+  - name: test_predictions_verified
+    status: pass | fail
+    message: ""
   - name: no_critical_bugs
     status: pass | fail
     message: ""
@@ -117,6 +124,7 @@ bugs_filed: []
 - **Requirements**: workflow/{ID}/1-requirements.md
 - **Architecture**: workflow/{ID}/2-architecture.md
 - **Implementation**: workflow/{ID}/3-implementation.md
+- **Test Impact Report**: workflow/{ID}/test-impact-report.md
 
 ## Requirements Traceability
 
@@ -163,6 +171,30 @@ bugs_filed: []
 | Test Case | Steps | Expected | Actual | Status |
 |-----------|-------|----------|--------|--------|
 | {case} | {steps} | {expected} | {actual} | Pass/Fail |
+
+## Test Impact Verification
+
+### Prediction Accuracy
+| Stage | Predicted | Actual | Accurate? |
+|-------|-----------|--------|-----------|
+| Tests to break | {count} | {count} | Yes/No |
+| Tests to modify | {count} | {count} | Yes/No |
+| New tests needed | {count} | {count} | Yes/No |
+
+### Test Changes Review
+| Prediction (from Requirements) | What Actually Happened | Notes |
+|-------------------------------|------------------------|-------|
+| {predicted change} | {actual outcome} | {lessons learned} |
+
+### Test Coverage Assessment
+| Area | Planned Coverage | Actual Coverage | Gap? |
+|------|-----------------|-----------------|------|
+| {feature area} | {planned tests} | {actual tests} | Yes/No |
+
+### Test Impact Report Status
+- [ ] Section 4 (Test Verification) completed
+- [ ] Final test summary documented
+- [ ] Lessons learned captured
 
 ## Bugs Found
 
@@ -335,6 +367,13 @@ Before marking complete, verify:
 - [ ] `npm run test:e2e` passes (0 failures)
 - [ ] `npm run build` succeeds
 - [ ] `npm run lint` passes
+
+### Checkpoint: test_predictions_verified
+- [ ] Test Impact Report from Requirements stage reviewed
+- [ ] Prediction accuracy documented (what was predicted vs actual)
+- [ ] Test coverage gaps identified and addressed
+- [ ] Test Impact Report Section 4 completed
+- [ ] Lessons learned captured for future predictions
 
 ### Checkpoint: no_critical_bugs
 - [ ] No bugs with severity "Critical" or "Blocker" remain open

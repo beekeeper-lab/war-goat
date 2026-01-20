@@ -27,11 +27,13 @@ The persistent requirements are the source of truth. The workflow document track
 2. **Analyze the Request** - Understand what is being asked
 3. **Research the Codebase** - Understand current state
 4. **Identify Impacted Areas** - What parts of the system are affected
-5. **Clarify Requirements** - Make implicit requirements explicit
-6. **Create/Update Persistent Requirements** - Write to `docs/requirements/`
-7. **Validate Your Output** - Verify all checkpoints pass
-8. **Retry if Needed** - Fix any validation failures (up to 3 attempts)
-9. **Document for Handoff** - Write workflow doc for the next agent
+5. **Analyze Test Impact** - Run existing tests, identify which tests are affected
+6. **Clarify Requirements** - Make implicit requirements explicit
+7. **Create/Update Persistent Requirements** - Write to `docs/requirements/`
+8. **Create Test Impact Report** - Write to `workflow/{WORK_ITEM_ID}/test-impact-report.md`
+9. **Validate Your Output** - Verify all checkpoints pass
+10. **Retry if Needed** - Fix any validation failures (up to 3 attempts)
+11. **Document for Handoff** - Write workflow doc for the next agent
 
 ## Validation Checkpoints
 
@@ -41,6 +43,7 @@ You MUST pass ALL checkpoints before handoff:
 |------------|----------|
 | `requirements_identified` | At least 3 functional requirements defined |
 | `impact_analyzed` | Components affected are identified with impact levels |
+| `test_impact_analyzed` | Existing tests run, impacted tests identified, Test Impact Report created |
 | `acceptance_criteria_defined` | Each AC is specific, measurable, and testable |
 | `no_open_blockers` | No unanswered questions that block architecture |
 
@@ -102,6 +105,9 @@ checkpoints:
     status: pass | fail
     message: "{details if failed}"
   - name: impact_analyzed
+    status: pass | fail
+    message: ""
+  - name: test_impact_analyzed
     status: pass | fail
     message: ""
   - name: acceptance_criteria_defined
@@ -166,6 +172,33 @@ last_failure: null
 | Risk | Likelihood | Impact | Mitigation |
 |------|------------|--------|------------|
 | {risk} | High/Medium/Low | High/Medium/Low | {mitigation} |
+
+## Test Impact Analysis
+
+### Existing Test Baseline
+```bash
+# Test run command and summary
+npm run test
+# Total: X tests, Y passing, Z failing
+```
+
+### Related Test Files
+| Test File | Type | Tests | Relevance | Predicted Impact |
+|-----------|------|-------|-----------|------------------|
+| {path} | Unit/E2E | {count} | High/Med/Low | Modify/Delete/Keep |
+
+### Tests Predicted to Break/Change
+| Test | File | Reason | Action Needed |
+|------|------|--------|---------------|
+| {test name} | {path} | {why it will break} | Modify/Delete/Update |
+
+### New Test Coverage Needed
+| Area | Type | Priority | Reason |
+|------|------|----------|--------|
+| {feature area} | Unit/E2E | High/Med/Low | {why needed} |
+
+### Test Impact Report
+See: `workflow/{WORK_ITEM_ID}/test-impact-report.md`
 
 ## User Stories
 
@@ -232,6 +265,40 @@ So that {benefit}
 6. Search codebase for related functionality
 7. Check existing similar features for patterns
 
+## Test Discovery Steps
+
+1. **Find existing test files**:
+   ```bash
+   # Find all test files
+   find . -name "*.test.*" -o -name "*.spec.*" -o -name "*_test.*" 2>/dev/null | head -50
+   # Or check common test directories
+   ls -la tests/ __tests__/ spec/ e2e/ 2>/dev/null
+   ```
+
+2. **Run existing tests to get baseline**:
+   ```bash
+   # Run tests and capture output
+   npm run test 2>&1 | tail -20
+   # Or for Python
+   pytest --collect-only 2>&1 | tail -20
+   ```
+
+3. **Identify tests related to impacted components**:
+   ```bash
+   # Search for tests mentioning affected components
+   grep -r "ComponentName\|functionName" tests/ --include="*.test.*"
+   ```
+
+4. **Check test coverage reports** (if available):
+   ```bash
+   ls coverage/ .nyc_output/ htmlcov/ 2>/dev/null
+   ```
+
+5. **Create Test Impact Report**:
+   - Copy template from `docs/templates/test-impact-report.md`
+   - Fill in Section 1 (Existing Test Baseline)
+   - Save to `workflow/{WORK_ITEM_ID}/test-impact-report.md`
+
 ## Self-Validation
 
 Before marking complete, verify:
@@ -245,6 +312,13 @@ Before marking complete, verify:
 - [ ] Components affected table is populated
 - [ ] Impact levels assigned (High/Medium/Low)
 - [ ] Dependencies identified
+
+### Checkpoint: test_impact_analyzed
+- [ ] Existing tests have been run (baseline captured)
+- [ ] Related test files are identified
+- [ ] Tests predicted to break/change are listed
+- [ ] New test coverage areas are identified
+- [ ] Test Impact Report created at `workflow/{WORK_ITEM_ID}/test-impact-report.md`
 
 ### Checkpoint: acceptance_criteria_defined
 - [ ] Each AC starts with a measurable verb (verify, confirm, ensure)

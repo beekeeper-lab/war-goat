@@ -30,11 +30,14 @@ This spec contains:
 1. **Verify Previous Stage** - Check `workflow/{WORK_ITEM_ID}/2-architecture.md` has `handoff_ready: true`
 2. **Read the Spec** - `specs/{WORK_ITEM_ID}-spec.md` (PRIMARY) and workflow doc
 3. **Read Requirements** - `docs/requirements/{WORK_ITEM_ID}-requirements.md` for context
-4. **Follow TDD** - Write tests first, then implement
-5. **Execute Tasks in Order** - Follow the step-by-step tasks exactly as specified
-6. **Validate Your Output** - Verify all checkpoints pass
-7. **Retry if Needed** - Fix any validation failures (up to 3 attempts)
-8. **Document Progress** - Track what you've done for QA
+4. **Read Test Impact Report** - `workflow/{WORK_ITEM_ID}/test-impact-report.md`
+5. **Run Existing Tests First** - Establish baseline before making any changes
+6. **Follow TDD** - Write tests first, then implement
+7. **Execute Tasks in Order** - Follow the step-by-step tasks exactly as specified
+8. **Update Test Impact Report** - Add Section 3 (Test Implementation Tracking)
+9. **Validate Your Output** - Verify all checkpoints pass
+10. **Retry if Needed** - Fix any validation failures (up to 3 attempts)
+11. **Document Progress** - Track what you've done for QA
 
 ## Validation Checkpoints
 
@@ -42,9 +45,10 @@ You MUST pass ALL checkpoints before handoff:
 
 | Checkpoint | Criteria |
 |------------|----------|
+| `baseline_tests_run` | Existing tests run before changes, baseline captured |
 | `tests_written` | All tests from architecture spec are implemented |
 | `code_complete` | All tasks from architecture spec are implemented |
-| `tests_passing` | All unit and E2E tests pass |
+| `tests_passing` | All unit and E2E tests pass (including pre-existing) |
 | `no_lint_errors` | Code passes linting with no errors |
 
 ## Retry Loop
@@ -89,6 +93,9 @@ completed_at: {ISO 8601 timestamp or null}
 status: complete | in_progress | failed | blocked
 handoff_ready: true | false
 checkpoints:
+  - name: baseline_tests_run
+    status: pass | fail
+    message: ""
   - name: tests_written
     status: pass | fail
     message: ""
@@ -111,7 +118,24 @@ previous_stage: 2-architecture.md
 ## Work Item
 - **ID**: {ID}
 - **Architecture Doc**: workflow/{ID}/2-architecture.md
+- **Test Impact Report**: workflow/{ID}/test-impact-report.md
 - **Branch**: {git branch name}
+
+## Pre-Implementation Test Baseline
+
+### Baseline Test Run (BEFORE any changes)
+```bash
+# Command
+npm run test
+
+# Summary
+{Total: X tests, Y passing, Z failing}
+```
+
+### Tests Identified for Modification (from Test Impact Report)
+| Test | Predicted Action | Actual Action | Status |
+|------|-----------------|---------------|--------|
+| {test name} | Modify/Delete | {what happened} | Done/Pending |
 
 ## Architecture Traceability
 
@@ -274,6 +298,12 @@ When writing E2E tests:
 ## Self-Validation
 
 Before marking complete, verify:
+
+### Checkpoint: baseline_tests_run
+- [ ] Existing tests were run BEFORE making any code changes
+- [ ] Baseline test results are documented
+- [ ] Tests predicted to change (from Test Impact Report) are tracked
+- [ ] Test Impact Report Section 3 is updated
 
 ### Checkpoint: tests_written
 - [ ] Every test file from architecture spec exists
