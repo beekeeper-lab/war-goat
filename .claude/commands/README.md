@@ -20,6 +20,24 @@ This document describes the custom Claude Code commands available for the projec
 | `/install` | Utility | Install all dependencies |
 | `/test` | Utility | Run all tests |
 | `/tools` | Utility | List available Claude tools |
+| `/add-video` | Content | Add a YouTube video with AI enrichment |
+| `/import-channel` | Content | Batch import videos from a YouTube channel |
+| `/start-workflow` | Workflow | Start a multi-agent workflow session |
+| `/merge-prs` | Workflow | Merge all workflow PRs safely |
+
+### Multi-Agent Workflow Commands (Internal)
+
+These commands are used internally by the multi-agent workflow system:
+
+| Command | Stage | Purpose |
+|---------|-------|---------|
+| `/workflow-requirements` | 1 | Requirements Agent - gather and document requirements |
+| `/workflow-architecture` | 2 | Architecture Agent - design technical solution |
+| `/workflow-implement` | 3 | Implementor Agent - write the code |
+| `/workflow-qa` | 4 | QA Agent - test and validate |
+| `/workflow-integration-gate` | 5 | Integration Gate - final validation before PR |
+
+See [Multi-Agent Workflow Documentation](../../docs/MULTI-AGENT-WORKFLOW.md) for details.
 
 ---
 
@@ -373,18 +391,110 @@ Lists all built-in Claude Code tools.
 
 ---
 
+## Content Commands
+
+### /add-video - Add YouTube Video
+
+Adds a YouTube video to the collection with AI-enhanced metadata.
+
+**Usage:**
+```
+/add-video <youtube-url>
+```
+
+**What it does:**
+1. Fetches video metadata (title, author, thumbnail)
+2. Retrieves transcript if available
+3. Generates AI summary and key points
+4. Auto-categorizes based on content
+5. Adds to the database
+
+---
+
+### /import-channel - Batch Import Channel
+
+Imports multiple videos from a YouTube channel.
+
+**Usage:**
+```
+/import-channel <channel-name-or-url>
+```
+
+**What it does:**
+1. Searches for the channel
+2. Lists recent videos
+3. Lets you select which to import
+4. Batch processes selected videos
+
+---
+
+## Multi-Agent Workflow Commands
+
+These commands power the multi-agent workflow system for parallel feature development.
+See [Multi-Agent Workflow Documentation](../../docs/MULTI-AGENT-WORKFLOW.md) for complete details.
+
+### /start-workflow - Start Workflow Session
+
+Initializes a new workflow for a work item.
+
+**Usage:**
+```
+/start-workflow <WORK_ITEM_ID> <type> "<title>"
+```
+
+**Examples:**
+```
+/start-workflow F001 feature "Add user authentication"
+/start-workflow B002 bug "Fix login timeout"
+/start-workflow C003 chore "Update dependencies"
+```
+
+**What it does:**
+1. Creates a git worktree for isolated development
+2. Sets up workflow directory structure
+3. Initializes the Requirements Agent
+4. Starts the tmux-based workflow monitor
+
+---
+
+### /merge-prs - Merge All Workflow PRs
+
+Safely merges all PRs from completed workflows.
+
+**Usage:**
+```
+/merge-prs
+```
+
+**What it does:**
+1. Discovers PRs with `workflow-ready` label
+2. For each PR:
+   - Updates branch if behind main
+   - Waits for CI checks to pass
+   - Verifies approval status
+   - Squash merges
+   - Verifies main is healthy
+3. Generates merge session report
+
+**Safeguards:**
+- Never bypasses branch protection
+- Stops on first failure
+- Full audit trail in `workflow/_reports/`
+
+---
+
 ## Typical Workflows
 
-### Bug Fix Workflow
+### Bug Fix Workflow (Simple)
 ```
 1. /bug Users see wrong date format in Case Log
 2. Review specs/bug-date-format.md
 3. /implement specs/bug-date-format.md
 4. /test
-5. Create PR
+5. /commit
 ```
 
-### Feature Development Workflow
+### Feature Development Workflow (Simple)
 ```
 1. /feature Add PDF export to Reports panel
 2. Review specs/feature-pdf-export.md
@@ -392,8 +502,17 @@ Lists all built-in Claude Code tools.
 4. /test
 5. /deploy-test
 6. Verify on test environment
-7. Create PR
+7. /commit
 8. After merge: /deploy-prod
+```
+
+### Multi-Agent Workflow (Complex Features)
+```
+1. /start-workflow F001 feature "Complex new feature"
+2. Agents run automatically through stages:
+   - Requirements → Architecture → Implementation → QA → Integration Gate
+3. Review the generated PR
+4. /merge-prs (at end of work session)
 ```
 
 ### Quick Start Workflow
@@ -410,24 +529,54 @@ Lists all built-in Claude Code tools.
 ```
 .claude/
 └── commands/
-    ├── README.md        # This file
-    ├── bug.md           # Bug planning template
-    ├── chore.md         # Chore planning template
-    ├── feature.md       # Feature planning template
-    ├── implement.md     # Plan execution
-    ├── commit.md        # Commit, push, PR workflow
-    ├── review.md        # Comprehensive code review
-    ├── test-gen.md      # Test generation
-    ├── deploy-test.md   # Test deployment
-    ├── deploy-prod.md   # Production deployment
-    ├── prime.md         # Codebase orientation
-    ├── start.md         # Start dev environment
-    ├── install.md       # Install dependencies
-    ├── test.md          # Run tests
-    └── tools.md         # List tools
+    ├── README.md                    # This file
+    │
+    │   # Planning Commands
+    ├── bug.md                       # Bug planning template (TDD)
+    ├── chore.md                     # Chore planning template (TDD)
+    ├── feature.md                   # Feature planning template (TDD)
+    ├── implement.md                 # Plan execution
+    │
+    │   # Quality Commands
+    ├── commit.md                    # Commit, push, PR workflow
+    ├── review.md                    # Comprehensive code review
+    ├── test-gen.md                  # Test generation (UI-first)
+    ├── test.md                      # Run tests
+    │
+    │   # Deployment Commands
+    ├── deploy-test.md               # Test deployment
+    ├── manual-deploy-prod.md        # Production deployment
+    │
+    │   # Utility Commands
+    ├── prime.md                     # Codebase orientation
+    ├── start.md                     # Start dev environment
+    ├── install.md                   # Install dependencies
+    ├── tools.md                     # List tools
+    │
+    │   # Content Commands
+    ├── add-video.md                 # Add YouTube video with AI enrichment
+    ├── import-channel.md            # Batch import from YouTube channel
+    │
+    │   # Multi-Agent Workflow Commands
+    ├── start-workflow.md            # Start workflow session
+    ├── merge-prs.md                 # Merge all workflow PRs
+    ├── workflow-requirements.md     # Stage 1: Requirements Agent
+    ├── workflow-architecture.md     # Stage 2: Architecture Agent
+    ├── workflow-implement.md        # Stage 3: Implementor Agent
+    ├── workflow-qa.md               # Stage 4: QA Agent
+    └── workflow-integration-gate.md # Stage 5: Integration Gate
 
 specs/
 ├── bug-*.md            # Bug fix plans
 ├── chore-*.md          # Maintenance plans
 └── feature-*.md        # Feature plans
+
+workflow/
+├── {WORK_ITEM_ID}/     # Workflow artifacts per work item
+│   ├── 1-requirements.md
+│   ├── 2-architecture.md
+│   ├── 3-implementation.md
+│   ├── 4-qa-report.md
+│   └── 5-integration-gate.md
+└── _reports/           # Merge session reports
 ```
