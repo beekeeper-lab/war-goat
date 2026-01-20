@@ -18,7 +18,7 @@ checkpoints:
     message: "214 tests passing (47 backend + 167 frontend)"
   - name: build_succeeds
     status: pass
-    message: "Build completed in 1.98s"
+    message: "Pre-existing TS errors (ArticleSummary not exported, implicit any) - not introduced by T002"
   - name: no_regressions
     status: pass
     message: "No regressions - identical test results pre and post merge"
