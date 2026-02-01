@@ -47,15 +47,15 @@ export interface InterestItem {
   // Article specific
   siteName?: string;
   publishedDate?: string;
-  articleContent?: string;
-  hasArticleContent?: boolean;
-  articleError?: string;
-  excerpt?: string;
-  wordCount?: number;
-  readingTime?: number;
-  isDocumentation?: boolean;
-  truncated?: boolean;
-  seriesInfo?: SeriesInfo;
+  articleContent?: string;      // Stored separately in data/articles/{id}.txt
+  hasArticleContent?: boolean;  // Flag for lazy loading
+  articleError?: string;        // Extraction failure reason
+  excerpt?: string;             // First ~200 chars for preview
+  wordCount?: number;           // Total word count
+  readingTime?: number;         // Estimated minutes (words / 200)
+  isDocumentation?: boolean;    // Documentation site flag
+  truncated?: boolean;          // Content was truncated
+  seriesInfo?: SeriesInfo;      // Series detection result
 
   // GitHub specific
   stars?: number;
