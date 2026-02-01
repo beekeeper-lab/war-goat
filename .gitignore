@@ -42,3 +42,4 @@ venv/
 # Workflow archives
 workflow/_archive/
 mcp-servers/youtube-content-management-mcp/
+.playwright-mcp/

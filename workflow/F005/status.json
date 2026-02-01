@@ -1,0 +1,49 @@
+{
+  "workflowId": "F005",
+  "type": "feature",
+  "title": "Memory & User Preferences",
+  "createdAt": "2026-01-20T13:01:53-05:00",
+  "currentStage": "complete",
+  "stages": {
+    "requirements": {
+      "status": "complete",
+      "startedAt": "2026-01-20T13:01:53.777568",
+      "completedAt": "2026-01-20T13:20:00-05:00",
+      "agent": "requirements-agent",
+      "output": "1-requirements.md"
+    },
+    "architecture": {
+      "status": "complete",
+      "startedAt": "2026-01-20T13:25:00-05:00",
+      "completedAt": "2026-01-20T14:10:00-05:00",
+      "agent": "architecture-agent",
+      "output": "2-architecture.md"
+    },
+    "implementation": {
+      "status": "complete",
+      "startedAt": "2026-01-20T14:05:00-05:00",
+      "completedAt": "2026-01-20T14:15:00-05:00",
+      "agent": "implementation-agent",
+      "output": "3-implementation.md"
+    },
+    "qa": {
+      "status": "complete",
+      "startedAt": "2026-01-20T14:05:00-05:00",
+      "completedAt": "2026-01-20T14:40:00-05:00",
+      "agent": "qa-agent",
+      "output": "4-qa-report.md"
+    },
+    "integration-gate": {
+      "status": "complete",
+      "startedAt": "2026-01-20T14:50:00-05:00",
+      "completedAt": "2026-01-20T14:57:00-05:00",
+      "agent": "integration-gate-agent",
+      "output": "5-integration-gate.md"
+    }
+  },
+  "branch": "feature/F005",
+  "worktree": "../war-goat-f005",
+  "bugs": [],
+  "notes": [],
+  "paneId": "%5"
+}

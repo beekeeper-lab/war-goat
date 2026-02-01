@@ -1,9 +1,21 @@
 import { ReactElement } from 'react'
 import { render, RenderOptions } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { PreferencesProvider } from '../contexts/PreferencesContext'
 
 /**
- * Custom render that includes userEvent setup
+ * Wrapper component that includes all providers needed for tests
+ */
+function AllTheProviders({ children }: { children: React.ReactNode }) {
+  return (
+    <PreferencesProvider>
+      {children}
+    </PreferencesProvider>
+  )
+}
+
+/**
+ * Custom render that includes userEvent setup and all providers
  */
 function customRender(
   ui: ReactElement,
@@ -11,7 +23,7 @@ function customRender(
 ) {
   return {
     user: userEvent.setup(),
-    ...render(ui, options),
+    ...render(ui, { wrapper: AllTheProviders, ...options }),
   }
 }
 
